@@ -209,6 +209,46 @@ function getConfiguredImageModel() {
   return String(process.env.GEMINI_IMAGE_MODEL || 'imagen-4.0-generate-001').trim();
 }
 
+function isGeminiNativeImageModel(model) {
+  return model.startsWith('gemini-');
+}
+
+function getImageFileExtension(mimeType) {
+  switch (mimeType) {
+    case 'image/jpeg':
+      return 'jpg';
+    case 'image/webp':
+      return 'webp';
+    case 'image/png':
+    default:
+      return 'png';
+  }
+}
+
+function extractInlineImagePart(response) {
+  const candidates = Array.isArray(response && response.candidates) ? response.candidates : [];
+
+  for (const candidate of candidates) {
+    const parts =
+      candidate &&
+      candidate.content &&
+      Array.isArray(candidate.content.parts)
+        ? candidate.content.parts
+        : [];
+
+    for (const part of parts) {
+      if (part && part.inlineData && part.inlineData.data) {
+        return {
+          data: part.inlineData.data,
+          mimeType: part.inlineData.mimeType || 'image/png',
+        };
+      }
+    }
+  }
+
+  return null;
+}
+
 function getImageGenerationWarning(kind, error) {
   const message = getErrorMessage(error).toLowerCase();
   const imageModel = getConfiguredImageModel();
@@ -393,32 +433,58 @@ async function generateImageAsset(gemini, prompt, slug, prefix) {
   if (!prompt) return null;
 
   const bucket = getStorageBucket();
-  const imageResponse = await gemini.models.generateImages({
-    model: getConfiguredImageModel(),
-    prompt,
-    config: {
-      numberOfImages: 1,
-      aspectRatio: '16:9',
-      includeRaiReason: true,
-    },
-  });
+  const imageModel = getConfiguredImageModel();
+  let imageData = null;
+  let mimeType = 'image/png';
 
-  const imageData =
-    imageResponse.generatedImages &&
-    imageResponse.generatedImages[0] &&
-    imageResponse.generatedImages[0].image &&
-    imageResponse.generatedImages[0].image.imageBytes;
+  if (isGeminiNativeImageModel(imageModel)) {
+    const imageResponse = await gemini.models.generateContent({
+      model: imageModel,
+      contents: prompt,
+      config: {
+        imageConfig: {
+          aspectRatio: '16:9',
+        },
+      },
+    });
+
+    const inlineImage = extractInlineImagePart(imageResponse);
+    if (!inlineImage) {
+      return null;
+    }
+
+    imageData = inlineImage.data;
+    mimeType = inlineImage.mimeType;
+  } else {
+    const imageResponse = await gemini.models.generateImages({
+      model: imageModel,
+      prompt,
+      config: {
+        numberOfImages: 1,
+        aspectRatio: '16:9',
+        includeRaiReason: true,
+      },
+    });
+
+    imageData =
+      imageResponse.generatedImages &&
+      imageResponse.generatedImages[0] &&
+      imageResponse.generatedImages[0].image &&
+      imageResponse.generatedImages[0].image.imageBytes;
+  }
+
   if (!imageData) {
     return null;
   }
 
+  const fileExtension = getImageFileExtension(mimeType);
   const buffer = Buffer.from(imageData, 'base64');
   const token = randomUUID();
-  const storagePath = `public/posts/ai/${slug}/${prefix}-${Date.now()}.png`;
+  const storagePath = `public/posts/ai/${slug}/${prefix}-${Date.now()}.${fileExtension}`;
 
   await bucket.file(storagePath).save(buffer, {
     metadata: {
-      contentType: 'image/png',
+      contentType: mimeType,
       metadata: {
         firebaseStorageDownloadTokens: token,
       },
