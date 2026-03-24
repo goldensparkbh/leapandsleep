@@ -10,6 +10,7 @@ import { formatDate } from '@/utils/helpers';
 export function AdminLeads() {
   const [searchQuery, setSearchQuery] = useState('');
   const { subscribers } = useData();
+  const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 
   const filteredSubscribers = subscribers.filter((sub) => {
     if (searchQuery) {
@@ -20,6 +21,7 @@ export function AdminLeads() {
     }
     return true;
   });
+  const newThisMonthCount = subscribers.filter((sub) => sub.subscribedAt >= startOfMonth).length;
 
   return (
     <div className="p-6 lg:p-8">
@@ -66,7 +68,7 @@ export function AdminLeads() {
               <Users className="w-6 h-6 text-blue-600" />
             </div>
             <div>
-              <p className="text-2xl font-semibold text-[#0B0D10]">0</p>
+              <p className="text-2xl font-semibold text-[#0B0D10]">{newThisMonthCount}</p>
               <p className="text-sm text-[#6D727A]">New This Month</p>
             </div>
           </div>
@@ -100,6 +102,7 @@ export function AdminLeads() {
                     <th className="text-left px-6 py-4 text-sm font-medium text-[#6D727A]">Email</th>
                     <th className="text-left px-6 py-4 text-sm font-medium text-[#6D727A]">Name</th>
                     <th className="text-left px-6 py-4 text-sm font-medium text-[#6D727A]">Source</th>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-[#6D727A]">Page</th>
                     <th className="text-left px-6 py-4 text-sm font-medium text-[#6D727A]">Status</th>
                     <th className="text-left px-6 py-4 text-sm font-medium text-[#6D727A]">Date</th>
                   </tr>
@@ -117,6 +120,9 @@ export function AdminLeads() {
                         <Badge variant="secondary" className="bg-[#F6F7F9]">
                           {sub.source}
                         </Badge>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-[#6D727A]">{sub.pageUrl || '-'}</span>
                       </td>
                       <td className="px-6 py-4">
                         <Badge
@@ -139,6 +145,12 @@ export function AdminLeads() {
                 </tbody>
               </table>
             </div>
+
+            {filteredSubscribers.length === 0 && (
+              <div className="border-t border-[rgba(11,13,16,0.08)] px-6 py-10 text-center text-sm text-[#6D727A]">
+                No subscribers found.
+              </div>
+            )}
           </div>
         </TabsContent>
 

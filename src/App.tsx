@@ -18,6 +18,7 @@ import { AboutPage } from '@/pages/public/AboutPage';
 import { ContactPage } from '@/pages/public/ContactPage';
 import { SearchPage } from '@/pages/public/SearchPage';
 import { ResourcesPage } from '@/pages/public/ResourcesPage';
+import { NewsletterUnsubscribePage } from '@/pages/public/NewsletterUnsubscribePage';
 import { PrivacyPage, TermsPage, AffiliateDisclosurePage, CookiePolicyPage } from '@/pages/public/LegalPages';
 import { NotFoundPage } from '@/pages/public/NotFoundPage';
 
@@ -164,6 +165,14 @@ function App() {
                 element={
                   <PublicLayout>
                     <ResourcesPage />
+                  </PublicLayout>
+                }
+              />
+              <Route
+                path="/unsubscribe"
+                element={
+                  <PublicLayout>
+                    <NewsletterUnsubscribePage />
                   </PublicLayout>
                 }
               />

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type {
   Post,
   Tool,
@@ -9,6 +9,7 @@ import type {
   AffiliateLink,
   AiGeneratedPostDraft,
   Subscriber,
+  EmailSettings,
   SiteSettings,
 } from '@/types';
 import {
@@ -17,9 +18,10 @@ import {
   sampleCategories,
   sampleComparisons,
   sampleResources,
-  sampleSubscribers,
+  defaultEmailSettings,
   defaultSiteSettings,
 } from '@/data/sampleData';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   createAffiliateLink as createAffiliateLinkDocument,
   deleteAffiliateLink as deleteAffiliateLinkDocument,
@@ -37,6 +39,15 @@ import {
   uploadPostImage,
   type PostUpsertInput,
 } from '@/lib/firebase/posts';
+import {
+  subscribeToEmailSettings,
+  subscribeToSiteSettings,
+  updateEmailSettings as updateEmailSettingsDocument,
+  updateSiteSettings as updateSiteSettingsDocument,
+  type EmailSettingsUpsertInput,
+  type SiteSettingsUpsertInput,
+} from '@/lib/firebase/settings';
+import { subscribeToSubscribers } from '@/lib/firebase/subscribers';
 
 interface DataContextType {
   // Posts
@@ -86,6 +97,9 @@ interface DataContextType {
   
   // Site Settings
   siteSettings: SiteSettings;
+  emailSettings: EmailSettings;
+  updateSiteSettings: (input: SiteSettingsUpsertInput) => Promise<void>;
+  updateEmailSettings: (input: EmailSettingsUpsertInput) => Promise<void>;
   
   // Loading state
   isLoading: boolean;
@@ -94,6 +108,7 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export function DataProvider({ children }: { children: ReactNode }) {
+  const { isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [postsError, setPostsError] = useState<string | null>(null);
   
@@ -104,8 +119,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [comparisons] = useState<Comparison[]>(sampleComparisons);
   const [resources] = useState<Resource[]>(sampleResources);
   const [affiliateLinks, setAffiliateLinks] = useState<AffiliateLink[]>([]);
-  const [subscribers] = useState<Subscriber[]>(sampleSubscribers);
-  const [siteSettings] = useState<SiteSettings>(defaultSiteSettings);
+  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>(defaultSiteSettings);
+  const [emailSettings, setEmailSettings] = useState<EmailSettings>(defaultEmailSettings);
 
   useEffect(() => {
     const unsubscribe = subscribeToPosts(
@@ -134,6 +150,49 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToSiteSettings(
+      (nextSettings) => setSiteSettings(nextSettings),
+      (error) => {
+        console.error('Failed to load site settings from Firestore', error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setEmailSettings(defaultEmailSettings);
+      return;
+    }
+
+    const unsubscribe = subscribeToEmailSettings(
+      (nextSettings) => setEmailSettings(nextSettings),
+      (error) => {
+        console.error('Failed to load email settings from Firestore', error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setSubscribers([]);
+      return;
+    }
+
+    const unsubscribe = subscribeToSubscribers(
+      (nextSubscribers) => setSubscribers(nextSubscribers),
+      (error) => {
+        console.error('Failed to load subscribers from Firestore', error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [isAuthenticated]);
 
   const publishedPosts = posts.filter((post) => post.status === 'published');
 
@@ -170,6 +229,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const updateAffiliateLink = (id: string, input: AffiliateLinkUpsertInput) =>
     updateAffiliateLinkDocument(id, input);
   const deleteAffiliateLink = (id: string) => deleteAffiliateLinkDocument(id);
+  const updateSiteSettings = (input: SiteSettingsUpsertInput) =>
+    updateSiteSettingsDocument(input);
+  const updateEmailSettings = (input: EmailSettingsUpsertInput) =>
+    updateEmailSettingsDocument(input);
 
   const value: DataContextType = {
     posts,
@@ -204,6 +267,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     deleteAffiliateLink,
     subscribers,
     siteSettings,
+    emailSettings,
+    updateSiteSettings,
+    updateEmailSettings,
     isLoading,
   };
 

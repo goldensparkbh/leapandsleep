@@ -1,4 +1,15 @@
-import type { Post, Tool, ToolCategory, Category, Comparison, Resource, AffiliateLink, Subscriber, SiteSettings } from '@/types';
+import type {
+  EmailSettings,
+  Post,
+  Tool,
+  ToolCategory,
+  Category,
+  Comparison,
+  Resource,
+  AffiliateLink,
+  Subscriber,
+  SiteSettings,
+} from '@/types';
 
 export const sampleCategories: Category[] = [
   {
@@ -807,17 +818,22 @@ export const sampleSubscribers: Subscriber[] = [
   {
     id: 'sub-1',
     email: 'demo@example.com',
+    emailLower: 'demo@example.com',
     firstName: 'Demo',
     source: 'homepage',
+    pageUrl: '/',
     subscribedAt: new Date('2025-01-15'),
     isActive: true,
     tags: ['newsletter', 'homepage'],
+    unsubscribeToken: 'demo-unsubscribe-token',
+    updatedAt: new Date('2025-01-15'),
   },
 ];
 
 export const defaultSiteSettings: SiteSettings = {
   id: 'settings-1',
   siteName: 'LeapAndSleep',
+  siteUrl: 'https://leapandsleep0.web.app',
   tagline: 'Take the leap. Earn while you sleep.',
   logo: '/logo.svg',
   favicon: '/favicon.ico',
@@ -846,4 +862,18 @@ export const defaultSiteSettings: SiteSettings = {
     featuredTools: ['tool-1', 'tool-2', 'tool-3', 'tool-4', 'tool-5', 'tool-6'],
     featuredComparisons: ['comp-1', 'comp-2', 'comp-3'],
   },
+};
+
+export const defaultEmailSettings: EmailSettings = {
+  id: 'email',
+  fromName: 'LeapAndSleep',
+  fromEmail: '',
+  replyTo: '',
+  smtpHost: '',
+  smtpPort: 587,
+  smtpUsername: '',
+  smtpPassword: '',
+  smtpSecure: false,
+  welcomeSubject: 'Welcome to LeapAndSleep',
+  newPostSubjectTemplate: 'New on {siteName}: {postTitle}',
 };

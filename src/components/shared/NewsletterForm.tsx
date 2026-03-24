@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Check, Loader2 } from 'lucide-react';
+import { subscribeToNewsletter } from '@/lib/firebase/newsletter';
 import { isValidEmail } from '@/utils/helpers';
 
 interface NewsletterFormProps {
@@ -10,7 +12,19 @@ interface NewsletterFormProps {
   buttonText?: string;
   placeholder?: string;
   onSubmit?: (email: string) => Promise<void>;
+  source?: string;
   className?: string;
+}
+
+function deriveSourceFromPath(pathname: string) {
+  if (pathname === '/') return 'homepage';
+
+  const slug = pathname
+    .replace(/^\/+|\/+$/g, '')
+    .replace(/[^\w/-]+/g, '')
+    .replace(/\//g, '-');
+
+  return slug || 'newsletter';
 }
 
 export function NewsletterForm({
@@ -19,8 +33,10 @@ export function NewsletterForm({
   buttonText = 'Subscribe',
   placeholder = 'Email address',
   onSubmit,
+  source,
   className = '',
 }: NewsletterFormProps) {
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -48,13 +64,21 @@ export function NewsletterForm({
     try {
       if (onSubmit) {
         await onSubmit(email);
+      } else {
+        await subscribeToNewsletter({
+          email,
+          source: source || deriveSourceFromPath(location.pathname),
+          pageUrl: `${location.pathname}${location.search}${location.hash}`,
+        });
       }
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
       setIsSuccess(true);
       setEmail('');
-    } catch {
-      setError('Something went wrong. Please try again.');
+    } catch (submitError) {
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : 'Something went wrong. Please try again.'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -73,22 +97,27 @@ export function NewsletterForm({
 
   if (isMinimal) {
     return (
-      <form onSubmit={handleSubmit} className={`flex gap-2 ${className}`}>
-        <Input
-          type="email"
-          placeholder={placeholder}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="flex-1 bg-white border-[rgba(11,13,16,0.08)] rounded-full px-4"
-        />
-        <Button 
-          type="submit" 
-          disabled={isLoading}
-          className="bg-[#B8B1F5] text-[#0B0D10] hover:bg-[#a59eef] rounded-full px-6"
-        >
-          {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : buttonText}
-        </Button>
-      </form>
+      <div className={className}>
+        <form onSubmit={handleSubmit} className="flex gap-2">
+          <Input
+            type="email"
+            placeholder={placeholder}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="flex-1 bg-white border-[rgba(11,13,16,0.08)] rounded-full px-4"
+          />
+          <Button 
+            type="submit" 
+            disabled={isLoading}
+            className="bg-[#B8B1F5] text-[#0B0D10] hover:bg-[#a59eef] rounded-full px-6"
+          >
+            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : buttonText}
+          </Button>
+        </form>
+        {error && (
+          <p className="mt-2 text-sm text-red-500">{error}</p>
+        )}
+      </div>
     );
   }
 

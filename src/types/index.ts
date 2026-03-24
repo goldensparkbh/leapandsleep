@@ -235,11 +235,16 @@ export interface Resource {
 export interface Subscriber {
   id: string;
   email: string;
+  emailLower?: string;
   firstName?: string;
   source: string;
+  pageUrl?: string;
   subscribedAt: Date;
   isActive: boolean;
   tags?: string[];
+  unsubscribeToken?: string;
+  unsubscribedAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Lead {
@@ -258,6 +263,7 @@ export interface Lead {
 export interface SiteSettings {
   id: string;
   siteName: string;
+  siteUrl: string;
   tagline: string;
   logo: string;
   favicon: string;
@@ -286,6 +292,20 @@ export interface SiteSettings {
     featuredTools: string[];
     featuredComparisons: string[];
   };
+}
+
+export interface EmailSettings {
+  id: string;
+  fromName: string;
+  fromEmail: string;
+  replyTo?: string;
+  smtpHost: string;
+  smtpPort: number;
+  smtpUsername: string;
+  smtpPassword: string;
+  smtpSecure: boolean;
+  welcomeSubject: string;
+  newPostSubjectTemplate: string;
 }
 
 export interface MediaItem {

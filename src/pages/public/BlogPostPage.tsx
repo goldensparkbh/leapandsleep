@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { ArrowLeft, Clock, Calendar, Twitter, Facebook, Linkedin } from 'lucide-react';
 import DOMPurify from 'dompurify';
@@ -7,14 +8,36 @@ import { SEO } from '@/components/shared/SEO';
 import { AffiliateDisclosure } from '@/components/shared/AffiliateDisclosure';
 import { NewsletterForm } from '@/components/shared/NewsletterForm';
 import { PostComments } from '@/components/public/PostComments';
+import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
 import { formatDate, getSectionLabel } from '@/utils/helpers';
 import type { ContentBlock } from '@/types';
 
 export function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { getPostBySlug, getRecentPosts, isLoading } = useData();
+  const hasRecordedViewRef = useRef<string | null>(null);
+  const { isAuthenticated } = useAuth();
+  const { getPostBySlug, getRecentPosts, incrementPostViewCount, isLoading } = useData();
   const post = getPostBySlug(slug || '');
+
+  useEffect(() => {
+    if (!post || isAuthenticated) {
+      return;
+    }
+
+    const viewStorageKey = `post-viewed:${post.id}`;
+    if (hasRecordedViewRef.current === post.id || sessionStorage.getItem(viewStorageKey)) {
+      return;
+    }
+
+    hasRecordedViewRef.current = post.id;
+    sessionStorage.setItem(viewStorageKey, '1');
+
+    void incrementPostViewCount(post.id).catch(() => {
+      hasRecordedViewRef.current = null;
+      sessionStorage.removeItem(viewStorageKey);
+    });
+  }, [incrementPostViewCount, isAuthenticated, post]);
 
   if (isLoading) {
     return (

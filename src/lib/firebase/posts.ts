@@ -11,10 +11,10 @@ import {
   updateDoc,
   type QuerySnapshot,
   type DocumentData,
-  increment,
 } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-import { db, storage } from '@/config/firebase';
+import { db, functions, storage } from '@/config/firebase';
 import { getPlainTextFromBlocks, htmlToPlainText } from '@/lib/posts';
 import type { ContentBlock, FAQ, Post, PostStatus, PostSection } from '@/types';
 import { calculateReadingTime } from '@/utils/helpers';
@@ -74,6 +74,10 @@ export interface PostUpsertInput {
 
 const postsCollection = collection(db, 'posts');
 const DEFAULT_POST_AUTHOR_NAME = 'Alexandar';
+const recordPostViewCallable = httpsCallable<{ postId: string }, { counted: boolean; reason?: string }>(
+  functions,
+  'recordPostView'
+);
 
 function looksLikeEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
@@ -223,9 +227,7 @@ export async function deletePost(id: string) {
 }
 
 export async function incrementPostViews(id: string) {
-  await updateDoc(doc(db, 'posts', id), {
-    viewCount: increment(1),
-  });
+  await recordPostViewCallable({ postId: id });
 }
 
 export async function uploadPostImage(file: File) {

@@ -1,7 +1,9 @@
 const { createHash, randomUUID } = require('crypto');
 const admin = require('firebase-admin');
+const nodemailer = require('nodemailer');
 const { logger } = require('firebase-functions');
 const { setGlobalOptions } = require('firebase-functions/v2');
+const { onDocumentWritten } = require('firebase-functions/v2/firestore');
 const { HttpsError, onCall } = require('firebase-functions/v2/https');
 const { GoogleGenAI } = require('@google/genai');
 
@@ -309,6 +311,33 @@ function normalizeCommentText(value, maxLength = 4000) {
     .slice(0, maxLength);
 }
 
+function normalizeOptionalText(value, maxLength = 5000) {
+  return String(value || '').trim().slice(0, maxLength);
+}
+
+function normalizeUrlPath(value) {
+  const trimmedValue = normalizeOptionalText(value, 2000);
+  if (!trimmedValue) return '';
+
+  if (/^https?:\/\//i.test(trimmedValue)) {
+    return trimmedValue;
+  }
+
+  return trimmedValue.startsWith('/') ? trimmedValue : `/${trimmedValue}`;
+}
+
+function normalizeSiteUrl(value) {
+  const fallbackProject = process.env.GCLOUD_PROJECT || 'leapandsleep0';
+  const trimmedValue = normalizeOptionalText(value, 2000);
+  const baseValue = trimmedValue || `https://${fallbackProject}.web.app`;
+
+  if (/^https?:\/\//i.test(baseValue)) {
+    return baseValue.replace(/\/+$/, '');
+  }
+
+  return `https://${baseValue.replace(/^\/+/, '').replace(/\/+$/, '')}`;
+}
+
 function normalizeIpAddress(value) {
   const trimmedValue = String(value || '').trim();
   if (!trimmedValue) return '';
@@ -335,6 +364,283 @@ function getClientIpAddress(rawRequest) {
 
 function hashIpAddress(ipAddress) {
   return createHash('sha256').update(String(ipAddress || 'unknown')).digest('hex');
+}
+
+function toDate(value) {
+  if (value && typeof value.toDate === 'function') {
+    return value.toDate();
+  }
+
+  return value instanceof Date ? value : null;
+}
+
+function buildAbsoluteUrl(siteUrl, pathOrUrl) {
+  const normalizedPath = normalizeUrlPath(pathOrUrl);
+  if (!normalizedPath) return '';
+  if (/^https?:\/\//i.test(normalizedPath)) return normalizedPath;
+
+  const normalizedSiteUrl = normalizeSiteUrl(siteUrl);
+  return `${normalizedSiteUrl}${normalizedPath}`;
+}
+
+function renderEmailBrandMarkup(logoUrl, siteName, width) {
+  if (logoUrl) {
+    return `<img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(siteName)}" width="${width}" style="display:block;width:${width}px;max-width:100%;height:auto;margin:0 auto;" />`;
+  }
+
+  return `<div style="font-family:Arial,sans-serif;font-size:22px;font-weight:700;color:#0B0D10;text-align:center;">${escapeHtml(siteName)}</div>`;
+}
+
+function renderEmailShell({
+  siteSettings,
+  title,
+  bodyHtml,
+  ctaLabel,
+  ctaUrl,
+  previewText,
+  unsubscribeUrl,
+  footerNote,
+  heroImageUrl,
+}) {
+  const siteName = normalizeOptionalText(siteSettings.siteName, 120) || 'LeapAndSleep';
+  const siteUrl = normalizeSiteUrl(siteSettings.siteUrl);
+  const logoUrl = buildAbsoluteUrl(siteUrl, siteSettings.logo || siteSettings.favicon);
+  const accentColor = normalizeOptionalText(siteSettings.accentColor, 40) || '#B8B1F5';
+  const primaryColor = normalizeOptionalText(siteSettings.primaryColor, 40) || '#0B0D10';
+  const tagline =
+    normalizeOptionalText(siteSettings.tagline, 180) || 'Take the leap. Earn while you sleep.';
+  const footerText = normalizeOptionalText(siteSettings.footerContent, 280) || tagline;
+  const safeFooterNote = normalizeOptionalText(footerNote, 320);
+  const safeTitle = escapeHtml(title);
+  const safePreviewText = escapeHtml(previewText || safeTitle);
+  const safeCtaLabel = escapeHtml(ctaLabel || 'Read more');
+  const safeCtaUrl = buildAbsoluteUrl(siteUrl, ctaUrl);
+  const safeUnsubscribeUrl = buildAbsoluteUrl(siteUrl, unsubscribeUrl);
+  const safeHeroImageUrl = buildAbsoluteUrl(siteUrl, heroImageUrl);
+
+  return `
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${safeTitle}</title>
+  </head>
+  <body style="margin:0;padding:0;background:#F6F7F9;color:#0B0D10;">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${safePreviewText}</div>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F6F7F9;padding:32px 16px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:640px;">
+            <tr>
+              <td style="padding-bottom:24px;text-align:center;">
+                <a href="${escapeHtml(siteUrl)}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
+                  ${renderEmailBrandMarkup(logoUrl, siteName, 176)}
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td style="background:#FFFFFF;border:1px solid rgba(11,13,16,0.08);border-radius:28px;padding:32px;box-shadow:0 8px 30px rgba(11,13,16,0.04);">
+                ${safeHeroImageUrl ? `<img src="${escapeHtml(safeHeroImageUrl)}" alt="${safeTitle}" style="display:block;width:100%;height:auto;border-radius:20px;margin:0 0 24px;" />` : ''}
+                <p style="margin:0 0 12px;font-family:Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:${escapeHtml(accentColor)};">${escapeHtml(tagline)}</p>
+                <h1 style="margin:0 0 18px;font-family:Arial,sans-serif;font-size:32px;line-height:1.2;color:${escapeHtml(primaryColor)};">${safeTitle}</h1>
+                <div style="font-family:Arial,sans-serif;font-size:16px;line-height:1.7;color:#3D434B;">
+                  ${bodyHtml}
+                </div>
+                ${
+                  safeCtaUrl
+                    ? `<div style="margin-top:28px;">
+                        <a href="${escapeHtml(safeCtaUrl)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:${escapeHtml(primaryColor)};color:#FFFFFF;text-decoration:none;padding:14px 22px;border-radius:999px;font-family:Arial,sans-serif;font-size:15px;font-weight:700;">${safeCtaLabel}</a>
+                      </div>`
+                    : ''
+                }
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:24px 16px 0;text-align:center;">
+                <div style="margin:0 auto 12px;max-width:480px;">
+                  <a href="${escapeHtml(siteUrl)}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
+                    ${renderEmailBrandMarkup(logoUrl, siteName, 88)}
+                  </a>
+                </div>
+                <p style="margin:0 0 8px;font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#6D727A;">${escapeHtml(footerText)}</p>
+                ${
+                  safeFooterNote
+                    ? `<p style="margin:0 0 8px;font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#6D727A;">${escapeHtml(safeFooterNote)}</p>`
+                    : ''
+                }
+                ${
+                  safeUnsubscribeUrl
+                    ? `<p style="margin:0;font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#6D727A;">
+                        <a href="${escapeHtml(safeUnsubscribeUrl)}" target="_blank" rel="noopener noreferrer" style="color:${escapeHtml(primaryColor)};">Unsubscribe</a>
+                      </p>`
+                    : ''
+                }
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+}
+
+async function loadSiteSettings() {
+  const snapshot = await db.collection('settings').doc('site').get();
+  const data = snapshot.data() || {};
+
+  return {
+    siteName: normalizeOptionalText(data.siteName, 120) || 'LeapAndSleep',
+    siteUrl: normalizeSiteUrl(data.siteUrl),
+    tagline:
+      normalizeOptionalText(data.tagline, 180) || 'Take the leap. Earn while you sleep.',
+    logo: normalizeOptionalText(data.logo, 500),
+    favicon: normalizeOptionalText(data.favicon, 500),
+    primaryColor: normalizeOptionalText(data.primaryColor, 40) || '#0B0D10',
+    accentColor: normalizeOptionalText(data.accentColor, 40) || '#B8B1F5',
+    footerContent:
+      normalizeOptionalText(data.footerContent, 280) ||
+      'Take the leap. Earn while you sleep.',
+  };
+}
+
+async function loadEmailSettings() {
+  const snapshot = await db.collection('settings').doc('email').get();
+  const data = snapshot.data() || {};
+
+  return {
+    fromName: normalizeOptionalText(data.fromName, 120),
+    fromEmail: normalizeOptionalText(data.fromEmail, 240),
+    replyTo: normalizeOptionalText(data.replyTo, 240),
+    smtpHost: normalizeOptionalText(data.smtpHost, 240),
+    smtpPort:
+      typeof data.smtpPort === 'number' && Number.isFinite(data.smtpPort)
+        ? data.smtpPort
+        : 587,
+    smtpUsername: normalizeOptionalText(data.smtpUsername, 240),
+    smtpPassword: normalizeOptionalText(data.smtpPassword, 500),
+    smtpSecure: Boolean(data.smtpSecure),
+    welcomeSubject: normalizeOptionalText(data.welcomeSubject, 240),
+    newPostSubjectTemplate: normalizeOptionalText(data.newPostSubjectTemplate, 240),
+  };
+}
+
+function hasSmtpSettings(emailSettings) {
+  return Boolean(
+    emailSettings.smtpHost &&
+      emailSettings.smtpPort &&
+      emailSettings.smtpUsername &&
+      emailSettings.smtpPassword &&
+      emailSettings.fromEmail
+  );
+}
+
+function createSmtpTransport(emailSettings) {
+  return nodemailer.createTransport({
+    host: emailSettings.smtpHost,
+    port: emailSettings.smtpPort,
+    secure: Boolean(emailSettings.smtpSecure),
+    auth: {
+      user: emailSettings.smtpUsername,
+      pass: emailSettings.smtpPassword,
+    },
+  });
+}
+
+function buildSubjectFromTemplate(template, replacements) {
+  const safeTemplate = normalizeOptionalText(template, 240);
+  if (!safeTemplate) {
+    return `New on ${replacements.siteName}: ${replacements.postTitle}`;
+  }
+
+  return safeTemplate.replace(/\{(siteName|postTitle)\}/g, (match, token) => {
+    const replacement = replacements[token];
+    return replacement ? String(replacement) : match;
+  });
+}
+
+async function sendSmtpMail(transport, emailSettings, payload) {
+  return transport.sendMail({
+    from: `"${emailSettings.fromName || 'LeapAndSleep'}" <${emailSettings.fromEmail}>`,
+    to: payload.to,
+    replyTo: emailSettings.replyTo || undefined,
+    subject: payload.subject,
+    text: payload.text,
+    html: payload.html,
+  });
+}
+
+async function sendWelcomeEmail(transport, subscriber, siteSettings, emailSettings) {
+  const unsubscribeUrl = `/unsubscribe?token=${encodeURIComponent(
+    subscriber.unsubscribeToken
+  )}`;
+  const ctaUrl = '/blog';
+  const title = `You're subscribed to ${siteSettings.siteName}`;
+  const bodyHtml = [
+    `<p style="margin:0 0 16px;">Thanks for subscribing. You'll now get new posts, practical guides, and tool recommendations from ${escapeHtml(siteSettings.siteName)}.</p>`,
+    `<p style="margin:0;">You can unsubscribe at any time using the link in the footer of every email.</p>`,
+  ].join('');
+  const html = renderEmailShell({
+    siteSettings,
+    title,
+    bodyHtml,
+    ctaLabel: 'Read the latest posts',
+    ctaUrl,
+    previewText: `Welcome to ${siteSettings.siteName}`,
+    unsubscribeUrl,
+    footerNote: 'You received this because you subscribed on the website.',
+  });
+
+  await sendSmtpMail(transport, emailSettings, {
+    to: subscriber.email,
+    subject: emailSettings.welcomeSubject || `Welcome to ${siteSettings.siteName}`,
+    text: `Thanks for subscribing to ${siteSettings.siteName}. Read the latest posts here: ${buildAbsoluteUrl(
+      siteSettings.siteUrl,
+      ctaUrl
+    )}\n\nUnsubscribe: ${buildAbsoluteUrl(siteSettings.siteUrl, unsubscribeUrl)}`,
+    html,
+  });
+}
+
+async function sendNewPostEmail(transport, subscriber, post, siteSettings, emailSettings) {
+  const postUrl = `/blog/${post.slug}`;
+  const unsubscribeUrl = `/unsubscribe?token=${encodeURIComponent(
+    subscriber.unsubscribeToken
+  )}`;
+  const subject = buildSubjectFromTemplate(emailSettings.newPostSubjectTemplate, {
+    siteName: siteSettings.siteName,
+    postTitle: post.title,
+  });
+  const summary =
+    normalizeOptionalText(post.summary, 600) ||
+    'A new article is live now. Read the full post on the site.';
+  const bodyHtml = [
+    `<p style="margin:0 0 16px;">A new post just went live on ${escapeHtml(siteSettings.siteName)}.</p>`,
+    `<p style="margin:0 0 16px;">${escapeHtml(summary)}</p>`,
+    `<p style="margin:0;">Open the full article for the complete guide.</p>`,
+  ].join('');
+  const html = renderEmailShell({
+    siteSettings,
+    title: post.title,
+    bodyHtml,
+    ctaLabel: 'Read the full post',
+    ctaUrl: postUrl,
+    previewText: post.summary || post.title,
+    unsubscribeUrl,
+    footerNote: 'You are receiving this because you are subscribed to new posts.',
+    heroImageUrl: post.featuredImage || '',
+  });
+
+  await sendSmtpMail(transport, emailSettings, {
+    to: subscriber.email,
+    subject,
+    text: `${post.title}\n\n${summary}\n\nRead now: ${buildAbsoluteUrl(
+      siteSettings.siteUrl,
+      postUrl
+    )}\n\nUnsubscribe: ${buildAbsoluteUrl(siteSettings.siteUrl, unsubscribeUrl)}`,
+    html,
+  });
 }
 
 function renderParagraphs(paragraphs) {
@@ -792,6 +1098,37 @@ exports.submitPostComment = onCall({ invoker: 'public' }, async (request) => {
   };
 });
 
+exports.recordPostView = onCall({ invoker: 'public' }, async (request) => {
+  if (request.auth) {
+    return { counted: false, reason: 'authenticated-user' };
+  }
+
+  const postId = normalizeOptionalText(request.data && request.data.postId, 120);
+  if (!postId) {
+    throw new HttpsError('invalid-argument', 'A post id is required.');
+  }
+
+  const postRef = db.collection('posts').doc(postId);
+  const postSnapshot = await postRef.get();
+  if (!postSnapshot.exists) {
+    throw new HttpsError('not-found', 'This post no longer exists.');
+  }
+
+  const postData = postSnapshot.data() || {};
+  if (postData.status !== 'published') {
+    return { counted: false, reason: 'not-published' };
+  }
+
+  await postRef.set(
+    {
+      viewCount: admin.firestore.FieldValue.increment(1),
+    },
+    { merge: true }
+  );
+
+  return { counted: true };
+});
+
 exports.generateBlogPostDraft = onCall({ invoker: 'public' }, async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'You must be signed in to generate AI drafts.');
@@ -963,4 +1300,283 @@ exports.generateBlogPostDraft = onCall({ invoker: 'public' }, async (request) =>
     faqs: blueprint.faqs || [],
     warnings,
   };
+});
+
+exports.subscribeToNewsletter = onCall({ invoker: 'public' }, async (request) => {
+  const email = normalizeOptionalText(request.data && request.data.email, 240).toLowerCase();
+  const firstName = normalizeOptionalText(request.data && request.data.firstName, 120);
+  const source = normalizeOptionalText(request.data && request.data.source, 120) || 'newsletter';
+  const pageUrl = normalizeUrlPath(request.data && request.data.pageUrl);
+
+  if (!isValidEmail(email)) {
+    throw new HttpsError('invalid-argument', 'A valid email address is required.');
+  }
+
+  const subscriberRef = db.collection('subscribers').doc(email);
+  const subscriberSnapshot = await subscriberRef.get();
+  const existingData = subscriberSnapshot.exists ? subscriberSnapshot.data() || {} : {};
+  const wasActive = existingData.isActive !== false && subscriberSnapshot.exists;
+  const unsubscribeToken =
+    normalizeOptionalText(existingData.unsubscribeToken, 240) || randomUUID();
+  const normalizedTags = Array.from(
+    new Set(
+      ['newsletter', source]
+        .concat(Array.isArray(existingData.tags) ? existingData.tags : [])
+        .map((tag) => normalizeOptionalText(tag, 80).toLowerCase())
+        .filter(Boolean)
+    )
+  );
+  const timestamp = admin.firestore.FieldValue.serverTimestamp();
+  const status = subscriberSnapshot.exists
+    ? wasActive
+      ? 'already-subscribed'
+      : 'reactivated'
+    : 'subscribed';
+  const subscribedAtValue =
+    status === 'already-subscribed' && existingData.subscribedAt
+      ? existingData.subscribedAt
+      : timestamp;
+
+  await subscriberRef.set(
+    {
+      email,
+      emailLower: email,
+      firstName: firstName || normalizeOptionalText(existingData.firstName, 120) || null,
+      source,
+      pageUrl: pageUrl || null,
+      isActive: true,
+      tags: normalizedTags,
+      unsubscribeToken,
+      subscribedAt: subscribedAtValue,
+      unsubscribedAt: admin.firestore.FieldValue.delete(),
+      updatedAt: timestamp,
+    },
+    { merge: true }
+  );
+
+  let emailSent = false;
+
+  if (status !== 'already-subscribed') {
+    try {
+      const [siteSettings, emailSettings] = await Promise.all([
+        loadSiteSettings(),
+        loadEmailSettings(),
+      ]);
+
+      if (hasSmtpSettings(emailSettings)) {
+        const transport = createSmtpTransport(emailSettings);
+        try {
+          await sendWelcomeEmail(
+            transport,
+            {
+              email,
+              unsubscribeToken,
+            },
+            siteSettings,
+            emailSettings
+          );
+          emailSent = true;
+        } finally {
+          if (typeof transport.close === 'function') {
+            transport.close();
+          }
+        }
+      }
+    } catch (error) {
+      logger.warn('Welcome email could not be sent after subscription', {
+        email,
+        error: getErrorMessage(error),
+      });
+    }
+  }
+
+  return {
+    status,
+    emailSent,
+  };
+});
+
+exports.unsubscribeNewsletter = onCall({ invoker: 'public' }, async (request) => {
+  const token = normalizeOptionalText(request.data && request.data.token, 240);
+
+  if (!token) {
+    throw new HttpsError('invalid-argument', 'An unsubscribe token is required.');
+  }
+
+  const snapshot = await db
+    .collection('subscribers')
+    .where('unsubscribeToken', '==', token)
+    .limit(1)
+    .get();
+
+  if (snapshot.empty) {
+    throw new HttpsError('not-found', 'This unsubscribe link is invalid.');
+  }
+
+  const subscriberRef = snapshot.docs[0].ref;
+  const subscriberData = snapshot.docs[0].data() || {};
+
+  if (subscriberData.isActive === false) {
+    return { status: 'already-unsubscribed' };
+  }
+
+  await subscriberRef.set(
+    {
+      isActive: false,
+      unsubscribedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    },
+    { merge: true }
+  );
+
+  return { status: 'unsubscribed' };
+});
+
+exports.sendPublishedPostEmail = onDocumentWritten('posts/{postId}', async (event) => {
+  const change = event.data;
+  const before = change && change.before && change.before.exists ? change.before.data() || {} : null;
+  const after = change && change.after && change.after.exists ? change.after.data() || {} : null;
+
+  if (!after) {
+    return;
+  }
+
+  if (after.status !== 'published') {
+    return;
+  }
+
+  if (after.newsletterEmailSentAt) {
+    return;
+  }
+
+  if (before && before.status === 'published') {
+    return;
+  }
+
+  const postTitle = normalizeOptionalText(after.title, 240);
+  const postSlug = normalizeOptionalText(after.slug, 240);
+  if (!postTitle || !postSlug) {
+    logger.warn('Skipping published post email because title or slug is missing', {
+      postId: event.params.postId,
+    });
+    return;
+  }
+
+  const emailSettings = await loadEmailSettings();
+  if (!hasSmtpSettings(emailSettings)) {
+    logger.warn('Skipping published post email because SMTP is not configured', {
+      postId: event.params.postId,
+    });
+    return;
+  }
+
+  const activeSubscribersSnapshot = await db
+    .collection('subscribers')
+    .where('isActive', '==', true)
+    .get();
+
+  if (activeSubscribersSnapshot.empty) {
+    await change.after.ref.set(
+      {
+        newsletterEmailSentAt: admin.firestore.FieldValue.serverTimestamp(),
+        newsletterEmailRecipientCount: 0,
+        newsletterEmailFailureCount: 0,
+      },
+      { merge: true }
+    );
+    return;
+  }
+
+  const subscribers = activeSubscribersSnapshot.docs
+    .map((subscriberSnapshot) => {
+      const subscriber = subscriberSnapshot.data() || {};
+      const email = normalizeOptionalText(subscriber.email, 240).toLowerCase();
+      const unsubscribeToken = normalizeOptionalText(subscriber.unsubscribeToken, 240);
+
+      if (!isValidEmail(email) || !unsubscribeToken) {
+        return null;
+      }
+
+      return {
+        email,
+        unsubscribeToken,
+      };
+    })
+    .filter(Boolean);
+
+  if (subscribers.length === 0) {
+    await change.after.ref.set(
+      {
+        newsletterEmailSentAt: admin.firestore.FieldValue.serverTimestamp(),
+        newsletterEmailRecipientCount: 0,
+        newsletterEmailFailureCount: 0,
+      },
+      { merge: true }
+    );
+    return;
+  }
+
+  const siteSettings = await loadSiteSettings();
+  const transport = createSmtpTransport(emailSettings);
+
+  try {
+    await transport.verify();
+  } catch (error) {
+    logger.error('SMTP verification failed before sending published post email', {
+      postId: event.params.postId,
+      error: getErrorMessage(error),
+    });
+
+    if (typeof transport.close === 'function') {
+      transport.close();
+    }
+    return;
+  }
+
+  let sentCount = 0;
+  let failedCount = 0;
+  for (const subscriber of subscribers) {
+    try {
+      await sendNewPostEmail(
+        transport,
+        subscriber,
+        {
+          title: postTitle,
+          slug: postSlug,
+          summary: normalizeOptionalText(after.summary, 1200),
+          featuredImage: normalizeOptionalText(after.featuredImage, 2000),
+          publishDate: toDate(after.publishDate),
+        },
+        siteSettings,
+        emailSettings
+      );
+      sentCount += 1;
+    } catch (error) {
+      failedCount += 1;
+      logger.warn('Failed sending new-post email to subscriber', {
+        postId: event.params.postId,
+        email: subscriber.email,
+        error: getErrorMessage(error),
+      });
+    }
+  }
+
+  if (typeof transport.close === 'function') {
+    transport.close();
+  }
+
+  await change.after.ref.set(
+    {
+      newsletterEmailSentAt: admin.firestore.FieldValue.serverTimestamp(),
+      newsletterEmailRecipientCount: sentCount,
+      newsletterEmailFailureCount: failedCount,
+    },
+    { merge: true }
+  );
+
+  logger.info('Finished sending published post emails', {
+    postId: event.params.postId,
+    sentCount,
+    failedCount,
+  });
 });

@@ -59,8 +59,7 @@ service cloud.firestore {
     }
 
     match /subscribers/{subscriberId} {
-      allow create: if true;
-      allow read, update, delete: if isAuthenticated();
+      allow read, write: if isAuthenticated();
     }
 
     match /leads/{leadId} {
@@ -68,9 +67,13 @@ service cloud.firestore {
       allow read, update, delete: if isAuthenticated();
     }
 
-    match /settings/{settingId} {
+    match /settings/site {
       allow read: if true;
       allow write: if isAuthenticated();
+    }
+
+    match /settings/{settingId} {
+      allow read, write: if isAuthenticated();
     }
 
     match /media/{mediaId} {
