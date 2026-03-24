@@ -56,10 +56,12 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 // Public Layout
 function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#F6F7F9]">
-      <Navbar />
-      <main>{children}</main>
-      <Footer />
+    <div className="min-h-screen bg-[#E3E8EF] px-3 py-3 lg:px-5 lg:py-5">
+      <div className="site-shell">
+        <Navbar />
+        <main className="relative z-10 flex-1">{children}</main>
+        <Footer />
+      </div>
     </div>
   );
 }
