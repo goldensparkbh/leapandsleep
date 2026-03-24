@@ -202,7 +202,7 @@ function buildYoutubeSearchUrl(query) {
 
 function getBucketName() {
   return (
-    process.env.FIREBASE_STORAGE_BUCKET ||
+    process.env.APP_STORAGE_BUCKET ||
     process.env.STORAGE_BUCKET ||
     (process.env.GCLOUD_PROJECT ? `${process.env.GCLOUD_PROJECT}.appspot.com` : '')
   );
