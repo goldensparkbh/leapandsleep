@@ -30,6 +30,7 @@ import { AdminTools } from '@/pages/admin/AdminTools';
 import { AdminToolEdit } from '@/pages/admin/AdminToolEdit';
 import { AdminComparisons } from '@/pages/admin/AdminComparisons';
 import { AdminAffiliateLinks } from '@/pages/admin/AdminAffiliateLinks';
+import { AdminComments } from '@/pages/admin/AdminComments';
 import { AdminCategories } from '@/pages/admin/AdminCategories';
 import { AdminLeads } from '@/pages/admin/AdminLeads';
 import { AdminMedia } from '@/pages/admin/AdminMedia';
@@ -217,6 +218,7 @@ function App() {
                 <Route path="tools/new" element={<AdminToolEdit />} />
                 <Route path="tools/:id" element={<AdminToolEdit />} />
                 <Route path="comparisons" element={<AdminComparisons />} />
+                <Route path="comments" element={<AdminComments />} />
                 <Route path="affiliate-links" element={<AdminAffiliateLinks />} />
                 <Route path="categories" element={<AdminCategories />} />
                 <Route path="leads" element={<AdminLeads />} />

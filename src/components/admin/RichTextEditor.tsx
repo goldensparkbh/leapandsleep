@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
@@ -15,6 +15,7 @@ import {
   Heading3,
   ImagePlus,
   Italic,
+  Loader2,
   Link2,
   List,
   ListOrdered,
@@ -25,13 +26,36 @@ import {
   YoutubeIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface RichTextEditorProps {
   value: string;
   onChange: (value: string) => void;
+  onUploadImage?: (file: File) => Promise<string>;
 }
 
-export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
+export function RichTextEditor({ value, onChange, onUploadImage }: RichTextEditorProps) {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+  const [imageSource, setImageSource] = useState<'url' | 'upload'>('url');
+  const [imageUrl, setImageUrl] = useState('');
+  const [imageAlt, setImageAlt] = useState('');
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+  const [imageError, setImageError] = useState('');
+  const [isUploadingInlineImage, setIsUploadingInlineImage] = useState(false);
+  const [imageInsertSelection, setImageInsertSelection] = useState<{ from: number; to: number } | null>(
+    null,
+  );
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -97,10 +121,83 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
     editor.chain().focus().extendMarkRange('link').setLink({ href: url.trim() }).run();
   };
 
-  const insertImage = () => {
-    const url = window.prompt('Enter image URL');
-    if (!url) return;
-    editor.chain().focus().setImage({ src: url.trim() }).run();
+  const resetImageDialog = () => {
+    setIsImageDialogOpen(false);
+    setImageSource('url');
+    setImageUrl('');
+    setImageAlt('');
+    setSelectedImageFile(null);
+    setImageError('');
+    setIsUploadingInlineImage(false);
+    setImageInsertSelection(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const openImageDialog = () => {
+    setImageInsertSelection({
+      from: editor.state.selection.from,
+      to: editor.state.selection.to,
+    });
+    setImageError('');
+    setIsImageDialogOpen(true);
+  };
+
+  const insertImageAtSelection = (src: string) => {
+    const selection = imageInsertSelection || {
+      from: editor.state.selection.from,
+      to: editor.state.selection.to,
+    };
+
+    editor
+      .chain()
+      .focus()
+      .setTextSelection(selection)
+      .setImage({
+        src,
+        alt: imageAlt.trim() || undefined,
+      })
+      .run();
+  };
+
+  const handleInsertImage = async () => {
+    setImageError('');
+
+    if (imageSource === 'url') {
+      const trimmedUrl = imageUrl.trim();
+
+      if (!trimmedUrl) {
+        setImageError('Enter an image URL first.');
+        return;
+      }
+
+      insertImageAtSelection(trimmedUrl);
+      resetImageDialog();
+      return;
+    }
+
+    if (!selectedImageFile) {
+      setImageError('Choose an image from your computer first.');
+      return;
+    }
+
+    if (!onUploadImage) {
+      setImageError('Image uploads are not configured for this editor.');
+      return;
+    }
+
+    try {
+      setIsUploadingInlineImage(true);
+      const uploadedImageUrl = await onUploadImage(selectedImageFile);
+      insertImageAtSelection(uploadedImageUrl);
+      resetImageDialog();
+    } catch (uploadError) {
+      setImageError(
+        uploadError instanceof Error ? uploadError.message : 'Could not upload the image.',
+      );
+      setIsUploadingInlineImage(false);
+    }
   };
 
   const insertYoutube = () => {
@@ -110,8 +207,17 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
   };
 
   return (
-    <div className="overflow-hidden rounded-[28px] border border-[rgba(11,13,16,0.08)] bg-white">
-      <div className="flex flex-wrap gap-2 border-b border-[rgba(11,13,16,0.08)] bg-[#F6F7F9] p-3">
+    <>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(event) => setSelectedImageFile(event.target.files?.[0] || null)}
+      />
+
+      <div className="overflow-hidden rounded-[28px] border border-[rgba(11,13,16,0.08)] bg-white">
+        <div className="flex flex-wrap gap-2 border-b border-[rgba(11,13,16,0.08)] bg-[#F6F7F9] p-3">
         <ToolbarButton
           label="Undo"
           onClick={() => editor.chain().focus().undo().run()}
@@ -198,7 +304,7 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
         />
         <ToolbarButton
           label="Image"
-          onClick={insertImage}
+          onClick={openImageDialog}
           icon={<ImagePlus className="h-4 w-4" />}
         />
         <ToolbarButton
@@ -206,10 +312,118 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
           onClick={insertYoutube}
           icon={<YoutubeIcon className="h-4 w-4" />}
         />
+        </div>
+
+        <EditorContent editor={editor} />
       </div>
 
-      <EditorContent editor={editor} />
-    </div>
+      <Dialog
+        open={isImageDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            resetImageDialog();
+            return;
+          }
+          setIsImageDialogOpen(true);
+        }}
+      >
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Add inline image</DialogTitle>
+            <DialogDescription>
+              Insert an image from an existing hosted URL or upload one from your computer.
+            </DialogDescription>
+          </DialogHeader>
+
+          <Tabs
+            value={imageSource}
+            onValueChange={(value) => {
+              setImageSource(value as 'url' | 'upload');
+              setImageError('');
+            }}
+          >
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="url">From URL</TabsTrigger>
+              <TabsTrigger value="upload">Upload</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="url" className="space-y-4 pt-3">
+              <div className="space-y-2">
+                <Label htmlFor="inline-image-url">Image URL</Label>
+                <Input
+                  id="inline-image-url"
+                  value={imageUrl}
+                  onChange={(event) => setImageUrl(event.target.value)}
+                  placeholder="https://storage.googleapis.com/... or any hosted image URL"
+                />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="upload" className="space-y-4 pt-3">
+              <div className="rounded-2xl border border-dashed border-[rgba(11,13,16,0.16)] bg-[#F6F7F9] p-5">
+                <p className="text-sm font-medium text-[#0B0D10]">
+                  Upload from your computer
+                </p>
+                <p className="mt-1 text-sm text-[#6D727A]">
+                  The image will be uploaded to Firebase Storage, then inserted into the post.
+                </p>
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="rounded-full"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploadingInlineImage}
+                  >
+                    <ImagePlus className="h-4 w-4" />
+                    Choose image
+                  </Button>
+                  <span className="text-sm text-[#6D727A]">
+                    {selectedImageFile ? selectedImageFile.name : 'No file selected'}
+                  </span>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          <div className="space-y-2">
+            <Label htmlFor="inline-image-alt">Alt text</Label>
+            <Input
+              id="inline-image-alt"
+              value={imageAlt}
+              onChange={(event) => setImageAlt(event.target.value)}
+              placeholder="Describe the image for accessibility"
+            />
+          </div>
+
+          {imageError ? (
+            <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {imageError}
+            </div>
+          ) : null}
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={resetImageDialog}
+              disabled={isUploadingInlineImage}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={() => void handleInsertImage()}
+              disabled={isUploadingInlineImage}
+              className="bg-[#0B0D10] text-white hover:bg-[#1A1D21]"
+            >
+              {isUploadingInlineImage ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              {imageSource === 'upload' ? 'Upload and insert' : 'Insert image'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

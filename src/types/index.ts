@@ -42,9 +42,47 @@ export interface Post {
   relatedTools?: string[];
   relatedPosts?: string[];
   isFeatured: boolean;
+  allowComments: boolean;
   isPillarContent: boolean;
   affiliateBlocks?: AffiliateBlock[];
   viewCount: number;
+}
+
+export type PostCommentStatus = 'visible' | 'hidden';
+
+export interface PostComment {
+  id: string;
+  postId: string;
+  postSlug: string;
+  postTitle: string;
+  authorName: string;
+  content: string;
+  status: PostCommentStatus;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CommentModerationRecord {
+  id: string;
+  commentId: string;
+  authorEmail?: string;
+  guestIp?: string;
+  guestIpHash?: string;
+  userAgent?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface BlockedCommentIp {
+  id: string;
+  ipAddress: string;
+  ipHash: string;
+  reason?: string;
+  commentId?: string;
+  commentAuthorName?: string;
+  createdBy?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface ContentBlock {

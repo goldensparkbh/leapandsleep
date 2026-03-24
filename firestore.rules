@@ -15,6 +15,19 @@ service cloud.firestore {
       allow create, update, delete: if isAuthenticated();
     }
 
+    match /comments/{commentId} {
+      allow read: if isAuthenticated() || resource.data.status == 'visible';
+      allow create, update, delete: if isAuthenticated();
+    }
+
+    match /commentModeration/{commentId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /blockedCommentIps/{ipHash} {
+      allow read, write: if isAuthenticated();
+    }
+
     match /categories/{categoryId} {
       allow read: if true;
       allow write: if isAuthenticated();

@@ -45,6 +45,7 @@ interface FirestorePost {
   relatedTools?: string[];
   relatedPosts?: string[];
   isFeatured?: boolean;
+  allowComments?: boolean;
   isPillarContent?: boolean;
   affiliateBlocks?: Post['affiliateBlocks'];
   viewCount?: number;
@@ -63,6 +64,7 @@ export interface PostUpsertInput {
   seoTitle?: string;
   metaDescription?: string;
   isFeatured: boolean;
+  allowComments: boolean;
   publishDate?: Date;
   authorId: string;
   authorName: string;
@@ -71,6 +73,21 @@ export interface PostUpsertInput {
 }
 
 const postsCollection = collection(db, 'posts');
+const DEFAULT_POST_AUTHOR_NAME = 'Alexandar';
+
+function looksLikeEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+function normalizeAuthorName(value?: string | null) {
+  const trimmedValue = String(value || '').trim();
+
+  if (!trimmedValue || looksLikeEmail(trimmedValue)) {
+    return DEFAULT_POST_AUTHOR_NAME;
+  }
+
+  return trimmedValue;
+}
 
 function toDate(value?: Timestamp | null) {
   return value instanceof Timestamp ? value.toDate() : undefined;
@@ -108,7 +125,7 @@ function snapshotToPosts(snapshot: QuerySnapshot<DocumentData, DocumentData>): P
       categories: data.categories || [],
       tags: data.tags || [],
       authorId: data.authorId || '',
-      authorName: data.authorName || 'Admin',
+      authorName: normalizeAuthorName(data.authorName),
       authorPhotoURL: data.authorPhotoURL,
       featuredImage: data.featuredImage,
       status: data.status || 'draft',
@@ -124,6 +141,7 @@ function snapshotToPosts(snapshot: QuerySnapshot<DocumentData, DocumentData>): P
       relatedTools: data.relatedTools || [],
       relatedPosts: data.relatedPosts || [],
       isFeatured: data.isFeatured || false,
+      allowComments: data.allowComments !== false,
       isPillarContent: data.isPillarContent || false,
       affiliateBlocks: data.affiliateBlocks || [],
       viewCount: data.viewCount || 0,
@@ -146,7 +164,7 @@ function buildPostPayload(input: PostUpsertInput) {
     categories: [],
     tags: input.tags,
     authorId: input.authorId,
-    authorName: input.authorName,
+    authorName: normalizeAuthorName(input.authorName),
     authorPhotoURL: input.authorPhotoURL || null,
     featuredImage: input.featuredImage,
     status: input.status,
@@ -160,6 +178,7 @@ function buildPostPayload(input: PostUpsertInput) {
     relatedTools: [],
     relatedPosts: [],
     isFeatured: input.isFeatured,
+    allowComments: input.allowComments,
     isPillarContent: false,
     affiliateBlocks: [],
   };

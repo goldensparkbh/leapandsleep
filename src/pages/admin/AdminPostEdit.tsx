@@ -40,6 +40,7 @@ interface FormState {
   featuredImage: string;
   tags: string;
   isFeatured: boolean;
+  allowComments: boolean;
   publishDate: string;
 }
 
@@ -55,8 +56,21 @@ const EMPTY_FORM: FormState = {
   featuredImage: '',
   tags: '',
   isFeatured: false,
+  allowComments: true,
   publishDate: '',
 };
+
+const DEFAULT_POST_AUTHOR_NAME = 'Alexandar';
+
+function resolvePostAuthorName(value?: string | null) {
+  const trimmedValue = String(value || '').trim();
+
+  if (!trimmedValue || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedValue)) {
+    return DEFAULT_POST_AUTHOR_NAME;
+  }
+
+  return trimmedValue;
+}
 
 function toDateTimeLocalValue(date?: Date) {
   if (!date) return '';
@@ -117,6 +131,7 @@ export function AdminPostEdit() {
       featuredImage: existingPost.featuredImage || '',
       tags: existingPost.tags.join(', '),
       isFeatured: existingPost.isFeatured,
+      allowComments: existingPost.allowComments,
       publishDate: toDateTimeLocalValue(existingPost.publishDate),
     });
     setFaqs(existingPost.faqs || []);
@@ -267,13 +282,12 @@ export function AdminPostEdit() {
         seoTitle: formData.seoTitle.trim(),
         metaDescription: formData.metaDescription.trim(),
         isFeatured: formData.isFeatured,
+        allowComments: formData.allowComments,
         publishDate: resolvedPublishDate,
         authorId: existingPost?.authorId || currentUser.uid,
-        authorName:
-          currentUser.displayName ||
-          currentUser.email ||
-          existingPost?.authorName ||
-          'Admin',
+        authorName: resolvePostAuthorName(
+          existingPost?.authorName || currentUser.displayName || currentUser.email,
+        ),
         authorPhotoURL: currentUser.photoURL || existingPost?.authorPhotoURL || undefined,
         faqs,
       };
@@ -419,6 +433,7 @@ export function AdminPostEdit() {
                 </div>
                 <RichTextEditor
                   value={formData.contentHtml}
+                  onUploadImage={uploadPostFeaturedImage}
                   onChange={(contentHtml) =>
                     setFormData((current) => ({ ...current, contentHtml }))
                   }
@@ -574,6 +589,21 @@ export function AdminPostEdit() {
                   checked={formData.isFeatured}
                   onCheckedChange={(checked) =>
                     setFormData((current) => ({ ...current, isFeatured: checked }))
+                  }
+                />
+              </div>
+
+              <div className="flex items-center justify-between rounded-2xl border border-[rgba(11,13,16,0.08)] p-4">
+                <div>
+                  <p className="font-medium text-[#0B0D10]">Comments enabled</p>
+                  <p className="text-sm text-[#6D727A]">
+                    Allow visitors to leave comments on this post.
+                  </p>
+                </div>
+                <Switch
+                  checked={formData.allowComments}
+                  onCheckedChange={(checked) =>
+                    setFormData((current) => ({ ...current, allowComments: checked }))
                   }
                 />
               </div>

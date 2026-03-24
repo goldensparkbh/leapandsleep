@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/shared/SEO';
 import { AffiliateDisclosure } from '@/components/shared/AffiliateDisclosure';
 import { NewsletterForm } from '@/components/shared/NewsletterForm';
+import { PostComments } from '@/components/public/PostComments';
 import { useData } from '@/contexts/DataContext';
 import { formatDate, getSectionLabel } from '@/utils/helpers';
 import type { ContentBlock } from '@/types';
@@ -189,6 +190,8 @@ export function BlogPostPage() {
                     </a>
                   </div>
                 </div>
+
+                <PostComments postId={post.id} allowComments={post.allowComments} />
               </div>
 
               {/* Sidebar */}

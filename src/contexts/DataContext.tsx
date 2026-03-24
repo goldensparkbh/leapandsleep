@@ -20,7 +20,13 @@ import {
   sampleSubscribers,
   defaultSiteSettings,
 } from '@/data/sampleData';
-import { subscribeToAffiliateLinks } from '@/lib/firebase/affiliateLinks';
+import {
+  createAffiliateLink as createAffiliateLinkDocument,
+  deleteAffiliateLink as deleteAffiliateLinkDocument,
+  subscribeToAffiliateLinks,
+  updateAffiliateLink as updateAffiliateLinkDocument,
+  type AffiliateLinkUpsertInput,
+} from '@/lib/firebase/affiliateLinks';
 import { generateAiPostDraft } from '@/lib/firebase/ai';
 import {
   createPost as createPostDocument,
@@ -71,6 +77,9 @@ interface DataContextType {
   // Affiliate Links
   affiliateLinks: AffiliateLink[];
   getAffiliateLinkById: (id: string) => AffiliateLink | undefined;
+  createAffiliateLink: (input: AffiliateLinkUpsertInput) => Promise<string>;
+  updateAffiliateLink: (id: string, input: AffiliateLinkUpsertInput) => Promise<void>;
+  deleteAffiliateLink: (id: string) => Promise<void>;
   
   // Subscribers
   subscribers: Subscriber[];
@@ -156,6 +165,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const getFeaturedResources = () => resources.filter(r => r.isFeatured);
 
   const getAffiliateLinkById = (id: string) => affiliateLinks.find(a => a.id === id);
+  const createAffiliateLink = (input: AffiliateLinkUpsertInput) =>
+    createAffiliateLinkDocument(input);
+  const updateAffiliateLink = (id: string, input: AffiliateLinkUpsertInput) =>
+    updateAffiliateLinkDocument(id, input);
+  const deleteAffiliateLink = (id: string) => deleteAffiliateLinkDocument(id);
 
   const value: DataContextType = {
     posts,
@@ -185,6 +199,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     getFeaturedResources,
     affiliateLinks,
     getAffiliateLinkById,
+    createAffiliateLink,
+    updateAffiliateLink,
+    deleteAffiliateLink,
     subscribers,
     siteSettings,
     isLoading,

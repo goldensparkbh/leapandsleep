@@ -1,4 +1,4 @@
-const { randomUUID } = require('crypto');
+const { createHash, randomUUID } = require('crypto');
 const admin = require('firebase-admin');
 const { logger } = require('firebase-functions');
 const { setGlobalOptions } = require('firebase-functions/v2');
@@ -296,6 +296,47 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;');
 }
 
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
+}
+
+function normalizeCommentText(value, maxLength = 4000) {
+  return String(value || '')
+    .replace(/\r\n/g, '\n')
+    .replace(/\u0000/g, '')
+    .trim()
+    .replace(/\n{3,}/g, '\n\n')
+    .slice(0, maxLength);
+}
+
+function normalizeIpAddress(value) {
+  const trimmedValue = String(value || '').trim();
+  if (!trimmedValue) return '';
+
+  const firstHop = trimmedValue.split(',')[0].trim();
+  return firstHop.startsWith('::ffff:') ? firstHop.slice(7) : firstHop;
+}
+
+function getClientIpAddress(rawRequest) {
+  const forwardedHeader = rawRequest && rawRequest.headers
+    ? rawRequest.headers['x-forwarded-for']
+    : '';
+  const forwardedValue = Array.isArray(forwardedHeader)
+    ? forwardedHeader[0]
+    : forwardedHeader;
+
+  return (
+    normalizeIpAddress(forwardedValue) ||
+    normalizeIpAddress(rawRequest && rawRequest.ip) ||
+    normalizeIpAddress(rawRequest && rawRequest.socket && rawRequest.socket.remoteAddress) ||
+    'unknown'
+  );
+}
+
+function hashIpAddress(ipAddress) {
+  return createHash('sha256').update(String(ipAddress || 'unknown')).digest('hex');
+}
+
 function renderParagraphs(paragraphs) {
   return (paragraphs || [])
     .filter(Boolean)
@@ -394,6 +435,17 @@ async function loadAffiliateLinks() {
       clickCount: Number(data.clickCount || 0),
     };
   });
+}
+
+async function getRecentCommentByIpHash(ipHash) {
+  const snapshot = await db
+    .collection('commentModeration')
+    .where('guestIpHash', '==', ipHash)
+    .orderBy('createdAt', 'desc')
+    .limit(1)
+    .get();
+
+  return snapshot.empty ? null : snapshot.docs[0].data();
 }
 
 function findMatchingAffiliateLink(affiliateLinks, suggestionName) {
@@ -627,6 +679,118 @@ function buildContentHtml(blueprint, affiliateSuggestions, youtubeSuggestions, i
 
   return htmlParts.filter(Boolean).join('\n');
 }
+
+exports.submitPostComment = onCall({ invoker: 'public' }, async (request) => {
+  const postId = String(request.data && request.data.postId ? request.data.postId : '').trim();
+  const authorName = normalizeCommentText(
+    request.data && request.data.authorName ? request.data.authorName : '',
+    80,
+  );
+  const authorEmail = normalizeCommentText(
+    request.data && request.data.authorEmail ? request.data.authorEmail : '',
+    160,
+  );
+  const content = normalizeCommentText(
+    request.data && request.data.content ? request.data.content : '',
+    4000,
+  );
+
+  if (!postId) {
+    throw new HttpsError('invalid-argument', 'A post id is required.');
+  }
+
+  if (!authorName || authorName.length < 2) {
+    throw new HttpsError('invalid-argument', 'Your name is required.');
+  }
+
+  if (authorEmail && !isValidEmail(authorEmail)) {
+    throw new HttpsError('invalid-argument', 'Email must be valid or left empty.');
+  }
+
+  if (!content || content.length < 8) {
+    throw new HttpsError('invalid-argument', 'Comment must be at least 8 characters.');
+  }
+
+  const postSnapshot = await db.collection('posts').doc(postId).get();
+  if (!postSnapshot.exists) {
+    throw new HttpsError('not-found', 'This post no longer exists.');
+  }
+
+  const postData = postSnapshot.data() || {};
+  if (postData.status !== 'published') {
+    throw new HttpsError('failed-precondition', 'Comments are only available on published posts.');
+  }
+
+  if (postData.allowComments === false) {
+    throw new HttpsError('failed-precondition', 'Comments are disabled for this post.');
+  }
+
+  const rawRequest = request.rawRequest;
+  const guestIp = getClientIpAddress(rawRequest);
+  const guestIpHash = hashIpAddress(guestIp);
+  const blockedIpSnapshot = await db.collection('blockedCommentIps').doc(guestIpHash).get();
+
+  if (blockedIpSnapshot.exists) {
+    throw new HttpsError(
+      'permission-denied',
+      'Comments from this network are blocked. Contact the site admin if this is a mistake.',
+    );
+  }
+
+  const recentComment = await getRecentCommentByIpHash(guestIpHash);
+  if (recentComment && recentComment.createdAt && typeof recentComment.createdAt.toDate === 'function') {
+    const lastCommentAt = recentComment.createdAt.toDate().getTime();
+    if (Date.now() - lastCommentAt < 60 * 1000) {
+      throw new HttpsError(
+        'resource-exhausted',
+        'Please wait about a minute before posting another comment.',
+      );
+    }
+  }
+
+  const commentRef = db.collection('comments').doc();
+  const timestamp = admin.firestore.FieldValue.serverTimestamp();
+
+  const batch = db.batch();
+  batch.set(commentRef, {
+    postId,
+    postSlug: String(postData.slug || '').trim(),
+    postTitle: String(postData.title || '').trim(),
+    authorName,
+    content,
+    status: 'visible',
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  });
+  batch.set(db.collection('commentModeration').doc(commentRef.id), {
+    commentId: commentRef.id,
+    authorEmail: authorEmail || null,
+    guestIp,
+    guestIpHash,
+    userAgent: normalizeCommentText(
+      rawRequest && rawRequest.headers && rawRequest.headers['user-agent']
+        ? rawRequest.headers['user-agent']
+        : '',
+      500,
+    ) || null,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  });
+
+  await batch.commit();
+
+  logger.info('Guest comment submitted', {
+    commentId: commentRef.id,
+    postId,
+    postSlug: String(postData.slug || '').trim(),
+    guestIpHash,
+  });
+
+  return {
+    commentId: commentRef.id,
+    status: 'visible',
+  };
+});
 
 exports.generateBlogPostDraft = onCall({ invoker: 'public' }, async (request) => {
   if (!request.auth) {

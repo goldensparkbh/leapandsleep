@@ -1,9 +1,14 @@
 import {
   Timestamp,
+  addDoc,
   collection,
+  deleteDoc,
+  doc,
   onSnapshot,
   orderBy,
   query,
+  serverTimestamp,
+  updateDoc,
   type DocumentData,
   type QuerySnapshot,
 } from 'firebase/firestore';
@@ -21,6 +26,16 @@ interface FirestoreAffiliateLink {
   clickCount?: number;
   createdAt?: Timestamp | null;
   updatedAt?: Timestamp | null;
+}
+
+export interface AffiliateLinkUpsertInput {
+  name: string;
+  destinationUrl?: string;
+  cloakedPath?: string;
+  toolId?: string;
+  campaignLabel?: string;
+  notes?: string;
+  isActive?: boolean;
 }
 
 const affiliateLinksCollection = collection(db, 'affiliateLinks');
@@ -49,6 +64,24 @@ function snapshotToAffiliateLinks(snapshot: QuerySnapshot<DocumentData, Document
   });
 }
 
+function normalizeOptionalValue(value?: string) {
+  const trimmedValue = String(value || '').trim();
+  return trimmedValue || null;
+}
+
+function buildAffiliateLinkPayload(input: AffiliateLinkUpsertInput) {
+  return {
+    name: input.name.trim(),
+    destinationUrl: normalizeOptionalValue(input.destinationUrl),
+    cloakedPath: normalizeOptionalValue(input.cloakedPath),
+    toolId: normalizeOptionalValue(input.toolId),
+    campaignLabel: normalizeOptionalValue(input.campaignLabel),
+    notes: normalizeOptionalValue(input.notes),
+    isActive: input.isActive ?? true,
+    updatedAt: serverTimestamp(),
+  };
+}
+
 export function subscribeToAffiliateLinks(
   onLinks: (links: AffiliateLink[]) => void,
   onError: (error: Error) => void
@@ -60,4 +93,22 @@ export function subscribeToAffiliateLinks(
     (snapshot) => onLinks(snapshotToAffiliateLinks(snapshot)),
     (error) => onError(error)
   );
+}
+
+export async function createAffiliateLink(input: AffiliateLinkUpsertInput) {
+  const docRef = await addDoc(affiliateLinksCollection, {
+    ...buildAffiliateLinkPayload(input),
+    clickCount: 0,
+    createdAt: serverTimestamp(),
+  });
+
+  return docRef.id;
+}
+
+export async function updateAffiliateLink(id: string, input: AffiliateLinkUpsertInput) {
+  await updateDoc(doc(affiliateLinksCollection, id), buildAffiliateLinkPayload(input));
+}
+
+export async function deleteAffiliateLink(id: string) {
+  await deleteDoc(doc(affiliateLinksCollection, id));
 }
