@@ -1,0 +1,67 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    match /users/{userId} {
+      allow read, create, update: if isAuthenticated() && request.auth.uid == userId;
+      allow delete: if false;
+    }
+
+    match /posts/{postId} {
+      allow read: if true;
+      allow create, update, delete: if isAuthenticated();
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /tools/{toolId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /toolCategories/{categoryId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /comparisons/{comparisonId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /affiliateLinks/{linkId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /resources/{resourceId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /subscribers/{subscriberId} {
+      allow create: if true;
+      allow read, update, delete: if isAuthenticated();
+    }
+
+    match /leads/{leadId} {
+      allow create: if true;
+      allow read, update, delete: if isAuthenticated();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /media/{mediaId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+  }
+}
