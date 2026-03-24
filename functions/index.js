@@ -157,6 +157,76 @@ function getGeminiClient() {
   return new GoogleGenAI({ apiKey });
 }
 
+function getErrorMessage(error) {
+  if (!error) return '';
+  if (typeof error === 'string') return error;
+  if (typeof error.message === 'string' && error.message) return error.message;
+
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return String(error);
+  }
+}
+
+function mapGeminiError(error, fallbackMessage) {
+  const message = getErrorMessage(error);
+  const lowerMessage = message.toLowerCase();
+  const status = Number(error && error.status ? error.status : 0);
+
+  if (lowerMessage.includes('reported as leaked')) {
+    return new HttpsError(
+      'failed-precondition',
+      'Gemini API key is blocked as leaked. Create a new Gemini key, update functions/.env, and redeploy Functions.'
+    );
+  }
+
+  if (lowerMessage.includes('tool use with a response mime type')) {
+    return new HttpsError(
+      'failed-precondition',
+      'The selected Gemini model rejected the current search-plus-JSON request format.'
+    );
+  }
+
+  if (status === 401 || status === 403) {
+    return new HttpsError(
+      'permission-denied',
+      fallbackMessage || 'Gemini rejected the request.'
+    );
+  }
+
+  if (status === 400) {
+    return new HttpsError(
+      'failed-precondition',
+      fallbackMessage || 'Gemini rejected the request configuration.'
+    );
+  }
+
+  return new HttpsError('internal', fallbackMessage || 'Gemini request failed.');
+}
+
+function getConfiguredImageModel() {
+  return String(process.env.GEMINI_IMAGE_MODEL || 'imagen-4.0-generate-001').trim();
+}
+
+function getImageGenerationWarning(kind, error) {
+  const message = getErrorMessage(error).toLowerCase();
+  const imageModel = getConfiguredImageModel();
+  const label = kind === 'inline' ? 'Inline image' : 'Featured image';
+
+  if (message.includes('only available on paid plans')) {
+    return `${label} could not be generated because ${imageModel} requires a paid Google AI plan. Upgrade the plan or switch GEMINI_IMAGE_MODEL to a supported image model.`;
+  }
+
+  if (message.includes('reported as leaked')) {
+    return `${label} could not be generated because the Gemini API key is blocked. Update GEMINI_API_KEY and redeploy Functions.`;
+  }
+
+  return kind === 'inline'
+    ? 'Inline image generation failed. The draft was created without the inline image.'
+    : 'Featured image generation failed. Review the post image before publishing.';
+}
+
 function slugify(value) {
   return String(value || '')
     .toLowerCase()
@@ -198,6 +268,43 @@ function renderList(items, ordered = false) {
 
 function buildYoutubeSearchUrl(query) {
   return `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+}
+
+function buildResearchPrompt(title, section) {
+  return [
+    'Research the article topic and return concise editorial notes.',
+    'Focus on evergreen, factual guidance and avoid speculation.',
+    'Do not produce the final article yet.',
+    'Return short bullet points covering:',
+    '- what the topic means',
+    '- key beginner mistakes',
+    '- practical steps',
+    '- important tool/product considerations',
+    '- caveats or fact-check items',
+    '',
+    `Title: ${title}`,
+    `Section: ${section}`,
+  ].join('\n');
+}
+
+function buildDraftPrompt(title, section, affiliateContext, researchNotes) {
+  return [
+    'Create a comprehensive affiliate-ready blog post draft from the supplied title.',
+    'Use the research notes when they are provided.',
+    'Only suggest affiliate links for names that appear in the existing affiliate-links list.',
+    'If a useful tool is missing from the list, include it in affiliateSuggestions without inventing a URL.',
+    'For YouTube, provide search queries instead of fabricated video URLs.',
+    'Write in a practical editorial tone and avoid fabricated claims, stats, case studies, or quotes.',
+    '',
+    `Title: ${title}`,
+    `Section: ${section}`,
+    '',
+    'Existing affiliate links:',
+    JSON.stringify(affiliateContext, null, 2),
+    '',
+    'Research notes:',
+    researchNotes || 'No grounded research notes were available. Keep the article evergreen and avoid unverifiable claims.',
+  ].join('\n');
 }
 
 function getBucketName() {
@@ -287,7 +394,7 @@ async function generateImageAsset(gemini, prompt, slug, prefix) {
 
   const bucket = getStorageBucket();
   const imageResponse = await gemini.models.generateImages({
-    model: process.env.GEMINI_IMAGE_MODEL || 'imagen-4.0-generate-001',
+    model: getConfiguredImageModel(),
     prompt,
     config: {
       numberOfImages: 1,
@@ -392,6 +499,19 @@ function buildFaqHtml(faqs) {
   `;
 }
 
+async function generateResearchNotes(gemini, title, section) {
+  const response = await gemini.models.generateContent({
+    model: process.env.GEMINI_TEXT_MODEL || 'gemini-2.5-flash',
+    contents: buildResearchPrompt(title, section),
+    config: {
+      temperature: 0.2,
+      tools: [{ googleSearch: {} }],
+    },
+  });
+
+  return response.text || '';
+}
+
 function buildContentHtml(blueprint, affiliateSuggestions, youtubeSuggestions, inlineImage) {
   const htmlParts = [];
   const inlineImagePlacement = inlineImage ? inlineImage.placementHeading : null;
@@ -458,31 +578,56 @@ exports.generateBlogPostDraft = onCall({ invoker: 'public' }, async (request) =>
 
   logger.info('Generating AI post draft', { title, section, affiliateLinkCount: affiliateContext.length });
 
-  const completion = await gemini.models.generateContent({
-    model: process.env.GEMINI_TEXT_MODEL || 'gemini-2.5-flash',
-    contents: JSON.stringify({
+  const warnings = [];
+  let researchNotes = '';
+
+  try {
+    researchNotes = await generateResearchNotes(gemini, title, section);
+  } catch (error) {
+    const message = getErrorMessage(error).toLowerCase();
+    if (message.includes('reported as leaked')) {
+      logger.error('Gemini research step failed because the API key is blocked', error);
+      throw mapGeminiError(
+        error,
+        'Gemini API access failed before draft generation could start.'
+      );
+    }
+
+    logger.warn('Gemini research step failed; continuing without search grounding', {
       title,
       section,
-      existingAffiliateLinks: affiliateContext,
-    }),
-    config: {
-      temperature: 0.7,
-      tools: [{ googleSearch: {} }],
-      systemInstruction: [
-        'You are an editorial assistant for an affiliate content site.',
-        'Write a comprehensive evergreen article draft from only the supplied title.',
-        'Use Google Search grounding when it improves the draft.',
-        'Avoid fabricated statistics, fake case studies, fake quotes, and claims that need real-time verification.',
-        'When tools or products are useful, suggest them in a practical, editorial tone.',
-        'Only suggest actual affiliate links for names provided in the existing affiliate-links list.',
-        'For missing affiliate opportunities, return them in affiliateSuggestions but do not invent URLs.',
-        'For video recommendations, provide YouTube search queries instead of fabricated video URLs.',
-        'Return valid JSON matching the requested schema exactly.',
-      ].join(' '),
-      responseMimeType: 'application/json',
-      responseJsonSchema: POST_BLUEPRINT_SCHEMA,
-    },
-  });
+      error: getErrorMessage(error),
+    });
+    warnings.push(
+      'Google Search grounding was unavailable for this draft. Fact-check the output before publishing.'
+    );
+  }
+
+  let completion;
+  try {
+    completion = await gemini.models.generateContent({
+      model: process.env.GEMINI_TEXT_MODEL || 'gemini-2.5-flash',
+      contents: buildDraftPrompt(title, section, affiliateContext, researchNotes),
+      config: {
+        temperature: 0.7,
+        systemInstruction: [
+          'You are an editorial assistant for an affiliate content site.',
+          'Write a comprehensive evergreen article draft from only the supplied title.',
+          'Avoid fabricated statistics, fake case studies, fake quotes, and claims that need real-time verification.',
+          'When tools or products are useful, suggest them in a practical, editorial tone.',
+          'Only suggest actual affiliate links for names provided in the existing affiliate-links list.',
+          'For missing affiliate opportunities, return them in affiliateSuggestions but do not invent URLs.',
+          'For video recommendations, provide YouTube search queries instead of fabricated video URLs.',
+          'Return valid JSON matching the requested schema exactly.',
+        ].join(' '),
+        responseMimeType: 'application/json',
+        responseJsonSchema: POST_BLUEPRINT_SCHEMA,
+      },
+    });
+  } catch (error) {
+    logger.error('Gemini content generation failed', error);
+    throw mapGeminiError(error, 'Gemini could not generate the blog draft.');
+  }
 
   const rawContent = completion.text;
 
@@ -499,8 +644,6 @@ exports.generateBlogPostDraft = onCall({ invoker: 'public' }, async (request) =>
   }
 
   const finalSlug = slugify(blueprint.slug || title);
-  const warnings = [];
-
   let featuredImage = null;
   try {
     featuredImage = await generateImageAsset(
@@ -511,7 +654,7 @@ exports.generateBlogPostDraft = onCall({ invoker: 'public' }, async (request) =>
     );
   } catch (error) {
     logger.error('Featured image generation failed', error);
-    warnings.push('Featured image generation failed. Review the post image before publishing.');
+    warnings.push(getImageGenerationWarning('featured', error));
   }
 
   let inlineImage = null;
@@ -535,7 +678,7 @@ exports.generateBlogPostDraft = onCall({ invoker: 'public' }, async (request) =>
       }
     } catch (error) {
       logger.error('Inline image generation failed', error);
-      warnings.push('Inline image generation failed. The draft was created without the inline image.');
+      warnings.push(getImageGenerationWarning('inline', error));
     }
   }
 
