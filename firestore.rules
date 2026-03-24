@@ -36,7 +36,8 @@ service cloud.firestore {
     }
 
     match /affiliateLinks/{linkId} {
-      allow read, write: if isAuthenticated();
+      allow read: if true;
+      allow write: if isAuthenticated();
     }
 
     match /resources/{resourceId} {

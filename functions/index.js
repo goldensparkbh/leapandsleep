@@ -1,0 +1,586 @@
+const { randomUUID } = require('crypto');
+const admin = require('firebase-admin');
+const { logger } = require('firebase-functions');
+const { setGlobalOptions } = require('firebase-functions/v2');
+const { HttpsError, onCall } = require('firebase-functions/v2/https');
+const { GoogleGenAI } = require('@google/genai');
+
+admin.initializeApp();
+setGlobalOptions({ region: 'us-central1', maxInstances: 10 });
+
+const db = admin.firestore();
+
+const POST_BLUEPRINT_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: [
+    'title',
+    'slug',
+    'summary',
+    'seoTitle',
+    'metaDescription',
+    'tags',
+    'featuredImagePrompt',
+    'introParagraphs',
+    'sections',
+    'conclusionParagraphs',
+    'inlineImages',
+    'youtubeSuggestions',
+    'affiliateSuggestions',
+    'faqs',
+  ],
+  properties: {
+    title: { type: 'string' },
+    slug: { type: 'string' },
+    summary: { type: 'string' },
+    seoTitle: { type: 'string' },
+    metaDescription: { type: 'string' },
+    tags: {
+      type: 'array',
+      minItems: 4,
+      maxItems: 10,
+      items: { type: 'string' },
+    },
+    featuredImagePrompt: { type: 'string' },
+    introParagraphs: {
+      type: 'array',
+      minItems: 2,
+      maxItems: 3,
+      items: { type: 'string' },
+    },
+    sections: {
+      type: 'array',
+      minItems: 4,
+      maxItems: 7,
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['heading', 'paragraphs', 'bulletPoints', 'numberedPoints', 'quote'],
+        properties: {
+          heading: { type: 'string' },
+          paragraphs: {
+            type: 'array',
+            minItems: 2,
+            maxItems: 4,
+            items: { type: 'string' },
+          },
+          bulletPoints: {
+            type: 'array',
+            maxItems: 6,
+            items: { type: 'string' },
+          },
+          numberedPoints: {
+            type: 'array',
+            maxItems: 6,
+            items: { type: 'string' },
+          },
+          quote: { type: 'string' },
+        },
+      },
+    },
+    conclusionParagraphs: {
+      type: 'array',
+      minItems: 1,
+      maxItems: 2,
+      items: { type: 'string' },
+    },
+    inlineImages: {
+      type: 'array',
+      maxItems: 1,
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['placementHeading', 'prompt', 'alt', 'caption'],
+        properties: {
+          placementHeading: { type: 'string' },
+          prompt: { type: 'string' },
+          alt: { type: 'string' },
+          caption: { type: 'string' },
+        },
+      },
+    },
+    youtubeSuggestions: {
+      type: 'array',
+      maxItems: 2,
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['placementHeading', 'title', 'query', 'reason'],
+        properties: {
+          placementHeading: { type: 'string' },
+          title: { type: 'string' },
+          query: { type: 'string' },
+          reason: { type: 'string' },
+        },
+      },
+    },
+    affiliateSuggestions: {
+      type: 'array',
+      maxItems: 4,
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['placementHeading', 'name', 'anchorText', 'reason'],
+        properties: {
+          placementHeading: { type: 'string' },
+          name: { type: 'string' },
+          anchorText: { type: 'string' },
+          reason: { type: 'string' },
+        },
+      },
+    },
+    faqs: {
+      type: 'array',
+      maxItems: 5,
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['question', 'answer'],
+        properties: {
+          question: { type: 'string' },
+          answer: { type: 'string' },
+        },
+      },
+    },
+  },
+};
+
+function getGeminiClient() {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  if (!apiKey) {
+    throw new HttpsError(
+      'failed-precondition',
+      'Missing GEMINI_API_KEY in functions environment.'
+    );
+  }
+
+  return new GoogleGenAI({ apiKey });
+}
+
+function slugify(value) {
+  return String(value || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function normalizeName(value) {
+  return slugify(value).replace(/-/g, '');
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function renderParagraphs(paragraphs) {
+  return (paragraphs || [])
+    .filter(Boolean)
+    .map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`)
+    .join('\n');
+}
+
+function renderList(items, ordered = false) {
+  const safeItems = (items || []).filter(Boolean);
+  if (safeItems.length === 0) return '';
+
+  const tag = ordered ? 'ol' : 'ul';
+  return `<${tag}>${safeItems
+    .map((item) => `<li>${escapeHtml(item)}</li>`)
+    .join('')}</${tag}>`;
+}
+
+function buildYoutubeSearchUrl(query) {
+  return `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+}
+
+function getBucketName() {
+  return (
+    process.env.FIREBASE_STORAGE_BUCKET ||
+    process.env.STORAGE_BUCKET ||
+    (process.env.GCLOUD_PROJECT ? `${process.env.GCLOUD_PROJECT}.appspot.com` : '')
+  );
+}
+
+function getStorageBucket() {
+  const bucketName = getBucketName();
+  if (!bucketName) {
+    throw new HttpsError(
+      'failed-precondition',
+      'Missing Firebase Storage bucket configuration for AI image generation.'
+    );
+  }
+
+  return admin.storage().bucket(bucketName);
+}
+
+function buildStorageDownloadUrl(bucketName, path, token) {
+  return `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodeURIComponent(
+    path
+  )}?alt=media&token=${token}`;
+}
+
+async function loadAffiliateLinks() {
+  const snapshot = await db.collection('affiliateLinks').get();
+  return snapshot.docs.map((docSnapshot) => {
+    const data = docSnapshot.data() || {};
+    return {
+      id: docSnapshot.id,
+      name: data.name || '',
+      destinationUrl: data.destinationUrl || '',
+      campaignLabel: data.campaignLabel || '',
+      notes: data.notes || '',
+      isActive: Boolean(data.isActive),
+      clickCount: Number(data.clickCount || 0),
+    };
+  });
+}
+
+function findMatchingAffiliateLink(affiliateLinks, suggestionName) {
+  const normalizedSuggestion = normalizeName(suggestionName);
+  return (
+    affiliateLinks.find((link) => normalizeName(link.name) === normalizedSuggestion) ||
+    affiliateLinks.find((link) => normalizedSuggestion.includes(normalizeName(link.name))) ||
+    affiliateLinks.find((link) => normalizeName(link.name).includes(normalizedSuggestion)) ||
+    null
+  );
+}
+
+async function ensureAffiliateLinkSuggestion(affiliateLinks, suggestion, postTitle) {
+  const existing = findMatchingAffiliateLink(affiliateLinks, suggestion.name);
+  if (existing) {
+    return { ...existing, wasCreated: false };
+  }
+
+  const docRef = await db.collection('affiliateLinks').add({
+    name: suggestion.name,
+    destinationUrl: '',
+    cloakedPath: '',
+    campaignLabel: 'ai-draft',
+    notes: `AI suggested this link for "${postTitle}". Add the real affiliate destination before activating. Suggested anchor: ${suggestion.anchorText}. Reason: ${suggestion.reason}`,
+    isActive: false,
+    clickCount: 0,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return {
+    id: docRef.id,
+    name: suggestion.name,
+    destinationUrl: '',
+    campaignLabel: 'ai-draft',
+    notes: `AI suggested this link for "${postTitle}".`,
+    isActive: false,
+    clickCount: 0,
+    wasCreated: true,
+  };
+}
+
+async function generateImageAsset(gemini, prompt, slug, prefix) {
+  if (!prompt) return null;
+
+  const bucket = getStorageBucket();
+  const imageResponse = await gemini.models.generateImages({
+    model: process.env.GEMINI_IMAGE_MODEL || 'imagen-4.0-generate-001',
+    prompt,
+    config: {
+      numberOfImages: 1,
+      aspectRatio: '16:9',
+      includeRaiReason: true,
+    },
+  });
+
+  const imageData =
+    imageResponse.generatedImages &&
+    imageResponse.generatedImages[0] &&
+    imageResponse.generatedImages[0].image &&
+    imageResponse.generatedImages[0].image.imageBytes;
+  if (!imageData) {
+    return null;
+  }
+
+  const buffer = Buffer.from(imageData, 'base64');
+  const token = randomUUID();
+  const storagePath = `public/posts/ai/${slug}/${prefix}-${Date.now()}.png`;
+
+  await bucket.file(storagePath).save(buffer, {
+    metadata: {
+      contentType: 'image/png',
+      metadata: {
+        firebaseStorageDownloadTokens: token,
+      },
+    },
+  });
+
+  return {
+    path: storagePath,
+    url: buildStorageDownloadUrl(bucket.name, storagePath, token),
+  };
+}
+
+function buildAffiliateCardHtml(link, suggestion) {
+  const safeTitle = escapeHtml(suggestion.name);
+  const safeAnchor = escapeHtml(suggestion.anchorText || `Explore ${suggestion.name}`);
+  const safeReason = escapeHtml(suggestion.reason);
+
+  if (link.destinationUrl) {
+    return `
+      <div class="affiliate-card">
+        <p class="affiliate-card__eyebrow">Recommended tool</p>
+        <p class="affiliate-card__title">${safeTitle}</p>
+        <p class="affiliate-card__body">${safeReason}</p>
+        <p><a href="${escapeHtml(link.destinationUrl)}" target="_blank" rel="noopener noreferrer nofollow sponsored">${safeAnchor}</a></p>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="affiliate-card affiliate-card--pending">
+      <p class="affiliate-card__eyebrow">Affiliate slot suggested</p>
+      <p class="affiliate-card__title">${safeTitle}</p>
+      <p class="affiliate-card__body">A matching affiliate URL was not available yet. Review this suggestion in the affiliate links admin section before publishing.</p>
+    </div>
+  `;
+}
+
+function buildYoutubeCardHtml(suggestion) {
+  const title = escapeHtml(suggestion.title);
+  const reason = escapeHtml(suggestion.reason);
+  const url = buildYoutubeSearchUrl(suggestion.query);
+
+  return `
+    <div class="video-suggestion-card">
+      <p class="video-suggestion-card__eyebrow">Suggested YouTube follow-up</p>
+      <p class="video-suggestion-card__title">${title}</p>
+      <p class="video-suggestion-card__body">${reason}</p>
+      <p><a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">Search on YouTube</a></p>
+    </div>
+  `;
+}
+
+function buildInlineImageHtml(image) {
+  if (!image || !image.url) return '';
+
+  return `
+    <figure>
+      <img src="${escapeHtml(image.url)}" alt="${escapeHtml(image.alt)}" />
+      <figcaption>${escapeHtml(image.caption)}</figcaption>
+    </figure>
+  `;
+}
+
+function buildFaqHtml(faqs) {
+  const safeFaqs = (faqs || []).filter((faq) => faq.question && faq.answer);
+  if (safeFaqs.length === 0) return '';
+
+  return `
+    <h2>Frequently asked questions</h2>
+    ${safeFaqs
+      .map(
+        (faq) => `
+          <h3>${escapeHtml(faq.question)}</h3>
+          <p>${escapeHtml(faq.answer)}</p>
+        `
+      )
+      .join('\n')}
+  `;
+}
+
+function buildContentHtml(blueprint, affiliateSuggestions, youtubeSuggestions, inlineImage) {
+  const htmlParts = [];
+  const inlineImagePlacement = inlineImage ? inlineImage.placementHeading : null;
+
+  htmlParts.push(renderParagraphs(blueprint.introParagraphs));
+
+  (blueprint.sections || []).forEach((section) => {
+    htmlParts.push(`<h2>${escapeHtml(section.heading)}</h2>`);
+    htmlParts.push(renderParagraphs(section.paragraphs));
+    htmlParts.push(renderList(section.bulletPoints, false));
+    htmlParts.push(renderList(section.numberedPoints, true));
+
+    if (section.quote) {
+      htmlParts.push(`<blockquote><p>${escapeHtml(section.quote)}</p></blockquote>`);
+    }
+
+    if (inlineImage && section.heading === inlineImagePlacement) {
+      htmlParts.push(buildInlineImageHtml(inlineImage));
+    }
+
+    affiliateSuggestions
+      .filter((suggestion) => suggestion.placementHeading === section.heading)
+      .forEach((suggestion) => {
+        htmlParts.push(buildAffiliateCardHtml(suggestion.link, suggestion));
+      });
+
+    youtubeSuggestions
+      .filter((suggestion) => suggestion.placementHeading === section.heading)
+      .forEach((suggestion) => {
+        htmlParts.push(buildYoutubeCardHtml(suggestion));
+      });
+  });
+
+  if (inlineImage && inlineImagePlacement && !blueprint.sections.some((section) => section.heading === inlineImagePlacement)) {
+    htmlParts.push(buildInlineImageHtml(inlineImage));
+  }
+
+  htmlParts.push(renderParagraphs(blueprint.conclusionParagraphs));
+  htmlParts.push(buildFaqHtml(blueprint.faqs));
+
+  return htmlParts.filter(Boolean).join('\n');
+}
+
+exports.generateBlogPostDraft = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'You must be signed in to generate AI drafts.');
+  }
+
+  const title = String(request.data && request.data.title ? request.data.title : '').trim();
+  const section = String(request.data && request.data.section ? request.data.section : 'start-the-leap').trim();
+
+  if (!title) {
+    throw new HttpsError('invalid-argument', 'A post title is required.');
+  }
+
+  const gemini = getGeminiClient();
+  const affiliateLinks = await loadAffiliateLinks();
+  const affiliateContext = affiliateLinks.slice(0, 50).map((link) => ({
+    name: link.name,
+    destinationUrl: link.destinationUrl,
+    isActive: link.isActive,
+    notes: link.notes,
+  }));
+
+  logger.info('Generating AI post draft', { title, section, affiliateLinkCount: affiliateContext.length });
+
+  const completion = await gemini.models.generateContent({
+    model: process.env.GEMINI_TEXT_MODEL || 'gemini-2.5-flash',
+    contents: JSON.stringify({
+      title,
+      section,
+      existingAffiliateLinks: affiliateContext,
+    }),
+    config: {
+      temperature: 0.7,
+      tools: [{ googleSearch: {} }],
+      systemInstruction: [
+        'You are an editorial assistant for an affiliate content site.',
+        'Write a comprehensive evergreen article draft from only the supplied title.',
+        'Use Google Search grounding when it improves the draft.',
+        'Avoid fabricated statistics, fake case studies, fake quotes, and claims that need real-time verification.',
+        'When tools or products are useful, suggest them in a practical, editorial tone.',
+        'Only suggest actual affiliate links for names provided in the existing affiliate-links list.',
+        'For missing affiliate opportunities, return them in affiliateSuggestions but do not invent URLs.',
+        'For video recommendations, provide YouTube search queries instead of fabricated video URLs.',
+        'Return valid JSON matching the requested schema exactly.',
+      ].join(' '),
+      responseMimeType: 'application/json',
+      responseJsonSchema: POST_BLUEPRINT_SCHEMA,
+    },
+  });
+
+  const rawContent = completion.text;
+
+  if (!rawContent) {
+    throw new HttpsError('internal', 'Gemini returned an empty draft.');
+  }
+
+  let blueprint;
+  try {
+    blueprint = JSON.parse(rawContent);
+  } catch (error) {
+    logger.error('Failed to parse Gemini JSON response', { rawContent, error });
+    throw new HttpsError('internal', 'Could not parse AI draft output.');
+  }
+
+  const finalSlug = slugify(blueprint.slug || title);
+  const warnings = [];
+
+  let featuredImage = null;
+  try {
+    featuredImage = await generateImageAsset(
+      gemini,
+      blueprint.featuredImagePrompt,
+      finalSlug,
+      'featured'
+    );
+  } catch (error) {
+    logger.error('Featured image generation failed', error);
+    warnings.push('Featured image generation failed. Review the post image before publishing.');
+  }
+
+  let inlineImage = null;
+  const inlineImageRequest = Array.isArray(blueprint.inlineImages) ? blueprint.inlineImages[0] : null;
+  if (inlineImageRequest) {
+    try {
+      const generatedInlineImage = await generateImageAsset(
+        gemini,
+        inlineImageRequest.prompt,
+        finalSlug,
+        'inline'
+      );
+
+      if (generatedInlineImage) {
+        inlineImage = {
+          ...generatedInlineImage,
+          alt: inlineImageRequest.alt,
+          caption: inlineImageRequest.caption,
+          placementHeading: inlineImageRequest.placementHeading,
+        };
+      }
+    } catch (error) {
+      logger.error('Inline image generation failed', error);
+      warnings.push('Inline image generation failed. The draft was created without the inline image.');
+    }
+  }
+
+  const affiliateSuggestions = [];
+  for (const suggestion of blueprint.affiliateSuggestions || []) {
+    const link = await ensureAffiliateLinkSuggestion(affiliateLinks, suggestion, blueprint.title || title);
+    affiliateSuggestions.push({
+      ...suggestion,
+      link,
+    });
+    if (link.wasCreated) {
+      affiliateLinks.push(link);
+    }
+  }
+
+  const contentHtml = buildContentHtml(
+    blueprint,
+    affiliateSuggestions,
+    blueprint.youtubeSuggestions || [],
+    inlineImage
+  );
+
+  return {
+    title: blueprint.title || title,
+    slug: finalSlug,
+    summary: blueprint.summary || '',
+    seoTitle: blueprint.seoTitle || blueprint.title || title,
+    metaDescription: blueprint.metaDescription || blueprint.summary || '',
+    tags: Array.isArray(blueprint.tags) ? blueprint.tags : [],
+    section,
+    featuredImageUrl: featuredImage ? featuredImage.url : '',
+    featuredImagePrompt: blueprint.featuredImagePrompt || '',
+    contentHtml,
+    youtubeSuggestions: blueprint.youtubeSuggestions || [],
+    affiliateSuggestions: affiliateSuggestions.map((suggestion) => ({
+      id: suggestion.link.id,
+      name: suggestion.name,
+      destinationUrl: suggestion.link.destinationUrl,
+      isActive: suggestion.link.isActive,
+      placementHeading: suggestion.placementHeading,
+      anchorText: suggestion.anchorText,
+      reason: suggestion.reason,
+      createdAsDraft: suggestion.link.wasCreated,
+    })),
+    faqs: blueprint.faqs || [],
+    warnings,
+  };
+});

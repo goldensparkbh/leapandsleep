@@ -145,3 +145,56 @@ export function getPlainTextFromBlocks(blocks: ContentBlock[]): string {
     .join(' ')
     .trim();
 }
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+export function blocksToHtml(blocks: ContentBlock[]): string {
+  return blocks
+    .map((block) => {
+      switch (block.type) {
+        case 'heading': {
+          const level = Math.min(Math.max(block.level || 2, 1), 6);
+          return `<h${level}>${escapeHtml(block.content || '')}</h${level}>`;
+        }
+        case 'paragraph':
+          return `<p>${escapeHtml(block.content || '')}</p>`;
+        case 'list':
+          return `<ul>${(block.items || [])
+            .map((item) => `<li>${escapeHtml(item)}</li>`)
+            .join('')}</ul>`;
+        case 'quote':
+          return `<blockquote><p>${escapeHtml(block.content || '')}</p></blockquote>`;
+        case 'callout':
+          return `<div class="ai-callout ai-callout--${block.style || 'info'}"><p>${escapeHtml(
+            block.content || ''
+          )}</p></div>`;
+        case 'image':
+          return `
+            <figure>
+              <img src="${escapeHtml(block.imageUrl || '')}" alt="${escapeHtml(block.alt || '')}" />
+              ${block.caption ? `<figcaption>${escapeHtml(block.caption)}</figcaption>` : ''}
+            </figure>
+          `;
+        default:
+          return block.content ? `<p>${escapeHtml(block.content)}</p>` : '';
+      }
+    })
+    .filter(Boolean)
+    .join('\n');
+}
+
+export function htmlToPlainText(value: string): string {
+  return value
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}

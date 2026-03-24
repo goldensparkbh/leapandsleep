@@ -228,3 +228,152 @@ html {
   color: #0B0D10;
   font-size: 1.25rem;
 }
+
+.rich-editor {
+  color: #0B0D10;
+  line-height: 1.75;
+}
+
+.rich-editor > * + * {
+  margin-top: 1rem;
+}
+
+.rich-editor h2,
+.rich-content h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #0B0D10;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.rich-editor h3,
+.rich-content h3 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #0B0D10;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.rich-editor p,
+.rich-content p {
+  color: #6D727A;
+  line-height: 1.75;
+  margin-bottom: 1.25rem;
+}
+
+.rich-editor ul,
+.rich-editor ol,
+.rich-content ul,
+.rich-content ol {
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+}
+
+.rich-editor ul,
+.rich-content ul {
+  list-style: disc;
+}
+
+.rich-editor ol,
+.rich-content ol {
+  list-style: decimal;
+}
+
+.rich-editor li,
+.rich-content li {
+  color: #6D727A;
+  margin-bottom: 0.5rem;
+}
+
+.rich-editor blockquote,
+.rich-content blockquote {
+  margin: 2rem 0;
+  border-left: 4px solid #B8B1F5;
+  padding-left: 1.5rem;
+}
+
+.rich-editor blockquote p,
+.rich-content blockquote p {
+  color: #0B0D10;
+  font-size: 1.15rem;
+  font-style: italic;
+}
+
+.rich-editor a,
+.rich-content a {
+  color: #0B0D10;
+  text-decoration: underline;
+  text-decoration-color: rgba(184, 177, 245, 0.75);
+  text-underline-offset: 3px;
+}
+
+.rich-editor img,
+.rich-content img {
+  width: 100%;
+  border-radius: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.rich-editor figure,
+.rich-content figure {
+  margin: 2rem 0;
+}
+
+.rich-editor figcaption,
+.rich-content figcaption {
+  text-align: center;
+  color: #6D727A;
+  font-size: 0.875rem;
+}
+
+.rich-editor iframe,
+.rich-content iframe {
+  width: 100%;
+  min-height: 360px;
+  border: 0;
+  border-radius: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.affiliate-card,
+.video-suggestion-card,
+.ai-callout {
+  margin: 2rem 0;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(11, 13, 16, 0.08);
+  background: #ffffff;
+  padding: 1.25rem;
+  box-shadow: 0 18px 50px rgba(11, 13, 16, 0.06);
+}
+
+.affiliate-card--pending {
+  background: #fff9eb;
+  border-color: #f4d38f;
+}
+
+.affiliate-card__eyebrow,
+.video-suggestion-card__eyebrow {
+  margin-bottom: 0.5rem;
+  color: #6D727A;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.affiliate-card__title,
+.video-suggestion-card__title {
+  margin-bottom: 0.5rem;
+  color: #0B0D10;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.affiliate-card__body,
+.video-suggestion-card__body {
+  margin-bottom: 0.75rem;
+  color: #6D727A;
+}

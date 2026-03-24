@@ -15,8 +15,8 @@ import {
 } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { db, storage } from '@/config/firebase';
-import { getPlainTextFromBlocks } from '@/lib/posts';
-import type { ContentBlock, Post, PostStatus, PostSection } from '@/types';
+import { getPlainTextFromBlocks, htmlToPlainText } from '@/lib/posts';
+import type { ContentBlock, FAQ, Post, PostStatus, PostSection } from '@/types';
 import { calculateReadingTime } from '@/utils/helpers';
 
 interface FirestorePost {
@@ -24,6 +24,7 @@ interface FirestorePost {
   slug?: string;
   summary?: string;
   content?: ContentBlock[];
+  contentHtml?: string;
   section?: PostSection;
   categories?: string[];
   tags?: string[];
@@ -54,6 +55,7 @@ export interface PostUpsertInput {
   slug: string;
   summary: string;
   content: ContentBlock[];
+  contentHtml?: string;
   section: PostSection;
   status: PostStatus;
   featuredImage: string;
@@ -65,6 +67,7 @@ export interface PostUpsertInput {
   authorId: string;
   authorName: string;
   authorPhotoURL?: string;
+  faqs?: FAQ[];
 }
 
 const postsCollection = collection(db, 'posts');
@@ -100,6 +103,7 @@ function snapshotToPosts(snapshot: QuerySnapshot<DocumentData, DocumentData>): P
       slug: data.slug || '',
       summary: data.summary || '',
       content: (data.content || []).map(normalizeContentBlock),
+      contentHtml: data.contentHtml || '',
       section: data.section || 'start-the-leap',
       categories: data.categories || [],
       tags: data.tags || [],
@@ -128,13 +132,16 @@ function snapshotToPosts(snapshot: QuerySnapshot<DocumentData, DocumentData>): P
 }
 
 function buildPostPayload(input: PostUpsertInput) {
-  const plainTextContent = getPlainTextFromBlocks(input.content);
+  const plainTextContent = input.contentHtml
+    ? htmlToPlainText(input.contentHtml)
+    : getPlainTextFromBlocks(input.content);
 
   return {
     title: input.title,
     slug: input.slug,
     summary: input.summary,
     content: input.content,
+    contentHtml: input.contentHtml || '',
     section: input.section,
     categories: [],
     tags: input.tags,
@@ -149,7 +156,7 @@ function buildPostPayload(input: PostUpsertInput) {
     ogImage: input.featuredImage,
     canonicalUrl: '',
     readingTime: calculateReadingTime(plainTextContent),
-    faqs: [],
+    faqs: input.faqs || [],
     relatedTools: [],
     relatedPosts: [],
     isFeatured: input.isFeatured,

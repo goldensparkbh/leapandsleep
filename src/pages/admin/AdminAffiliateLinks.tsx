@@ -22,6 +22,7 @@ export function AdminAffiliateLinks() {
   });
 
   const handleCopy = (url: string) => {
+    if (!url) return;
     copyToClipboard(url);
   };
 
@@ -68,7 +69,7 @@ export function AdminAffiliateLinks() {
                   <td className="px-6 py-4">
                     <p className="font-medium text-[#0B0D10]">{link.name}</p>
                     <p className="text-sm text-[#6D727A] truncate max-w-xs">
-                      {link.destinationUrl}
+                      {link.destinationUrl || 'Destination URL pending review'}
                     </p>
                   </td>
                   <td className="px-6 py-4">
@@ -85,12 +86,12 @@ export function AdminAffiliateLinks() {
                   <td className="px-6 py-4">
                     <Badge
                       className={
-                        link.isActive
+                        link.isActive && link.destinationUrl
                           ? 'bg-green-100 text-green-700'
-                          : 'bg-gray-100 text-gray-700'
+                          : 'bg-amber-100 text-amber-700'
                       }
                     >
-                      {link.isActive ? 'Active' : 'Inactive'}
+                      {link.isActive && link.destinationUrl ? 'Active' : 'Needs Review'}
                     </Badge>
                   </td>
                   <td className="px-6 py-4">
@@ -98,19 +99,26 @@ export function AdminAffiliateLinks() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        disabled={!link.destinationUrl}
                         onClick={() => handleCopy(link.destinationUrl)}
                       >
                         <Copy className="w-4 h-4" />
                       </Button>
-                      <a
-                        href={link.destinationUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Button variant="ghost" size="icon">
+                      {link.destinationUrl ? (
+                        <a
+                          href={link.destinationUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Button variant="ghost" size="icon">
+                            <ExternalLink className="w-4 h-4" />
+                          </Button>
+                        </a>
+                      ) : (
+                        <Button variant="ghost" size="icon" disabled>
                           <ExternalLink className="w-4 h-4" />
                         </Button>
-                      </a>
+                      )}
                     </div>
                   </td>
                 </tr>

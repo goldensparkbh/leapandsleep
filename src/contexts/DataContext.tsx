@@ -7,6 +7,7 @@ import type {
   Comparison,
   Resource,
   AffiliateLink,
+  AiGeneratedPostDraft,
   Subscriber,
   SiteSettings,
 } from '@/types';
@@ -16,10 +17,11 @@ import {
   sampleCategories,
   sampleComparisons,
   sampleResources,
-  sampleAffiliateLinks,
   sampleSubscribers,
   defaultSiteSettings,
 } from '@/data/sampleData';
+import { subscribeToAffiliateLinks } from '@/lib/firebase/affiliateLinks';
+import { generateAiPostDraft } from '@/lib/firebase/ai';
 import {
   createPost as createPostDocument,
   deletePost as deletePostDocument,
@@ -43,6 +45,7 @@ interface DataContextType {
   deletePost: (id: string) => Promise<void>;
   incrementPostViewCount: (id: string) => Promise<void>;
   uploadPostFeaturedImage: (file: File) => Promise<string>;
+  generateAiPostDraft: (title: string, section: Post['section']) => Promise<AiGeneratedPostDraft>;
   postsError: string | null;
   
   // Tools
@@ -91,7 +94,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [categories] = useState<Category[]>(sampleCategories);
   const [comparisons] = useState<Comparison[]>(sampleComparisons);
   const [resources] = useState<Resource[]>(sampleResources);
-  const [affiliateLinks] = useState<AffiliateLink[]>(sampleAffiliateLinks);
+  const [affiliateLinks, setAffiliateLinks] = useState<AffiliateLink[]>([]);
   const [subscribers] = useState<Subscriber[]>(sampleSubscribers);
   const [siteSettings] = useState<SiteSettings>(defaultSiteSettings);
 
@@ -106,6 +109,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
         console.error('Failed to load posts from Firestore', error);
         setPostsError(error.message);
         setIsLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToAffiliateLinks(
+      (nextLinks) => setAffiliateLinks(nextLinks),
+      (error) => {
+        console.error('Failed to load affiliate links from Firestore', error);
       }
     );
 
@@ -127,6 +141,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const deletePost = (id: string) => deletePostDocument(id);
   const incrementPostViewCount = (id: string) => incrementPostViews(id);
   const uploadPostFeaturedImage = (file: File) => uploadPostImage(file);
+  const generatePostDraft = (title: string, section: Post['section']) =>
+    generateAiPostDraft({ title, section });
 
   const getToolBySlug = (slug: string) => tools.find(t => t.slug === slug);
   const getToolsByCategory = (categoryId: string) => tools.filter(t => t.categoryId === categoryId);
@@ -153,6 +169,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     deletePost,
     incrementPostViewCount,
     uploadPostFeaturedImage,
+    generateAiPostDraft: generatePostDraft,
     postsError,
     tools,
     getToolBySlug,

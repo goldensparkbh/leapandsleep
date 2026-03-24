@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Save, Eye, ArrowLeft, Upload } from 'lucide-react';
+import { ArrowLeft, Eye, Save, Sparkles, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,12 +13,20 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { RichTextEditor } from '@/components/admin/RichTextEditor';
 import { useData } from '@/contexts/DataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { SITE_SECTIONS } from '@/constants/sections';
-import { blocksToEditorContent, editorContentToBlocks } from '@/lib/posts';
+import { blocksToHtml, htmlToPlainText } from '@/lib/posts';
 import { calculateReadingTime, getSectionLabel, slugify } from '@/utils/helpers';
-import type { PostSection, PostStatus } from '@/types';
+import type {
+  AiAffiliateSuggestion,
+  AiGeneratedPostDraft,
+  AiYoutubeSuggestion,
+  FAQ,
+  PostSection,
+  PostStatus,
+} from '@/types';
 
 interface FormState {
   title: string;
@@ -26,7 +34,7 @@ interface FormState {
   summary: string;
   section: PostSection;
   status: PostStatus;
-  content: string;
+  contentHtml: string;
   seoTitle: string;
   metaDescription: string;
   featuredImage: string;
@@ -41,7 +49,7 @@ const EMPTY_FORM: FormState = {
   summary: '',
   section: 'start-the-leap',
   status: 'draft',
-  content: '',
+  contentHtml: '<p></p>',
   seoTitle: '',
   metaDescription: '',
   featuredImage: '',
@@ -67,21 +75,31 @@ export function AdminPostEdit() {
     createPost,
     updatePost,
     uploadPostFeaturedImage,
+    generateAiPostDraft,
     isLoading,
   } = useData();
 
   const existingPost = id ? posts.find((post) => post.id === id) : null;
 
   const [formData, setFormData] = useState<FormState>(EMPTY_FORM);
+  const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [hasCustomSlug, setHasCustomSlug] = useState(Boolean(id));
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+  const [aiWarnings, setAiWarnings] = useState<string[]>([]);
+  const [aiAffiliateSuggestions, setAiAffiliateSuggestions] = useState<AiAffiliateSuggestion[]>([]);
+  const [aiYoutubeSuggestions, setAiYoutubeSuggestions] = useState<AiYoutubeSuggestion[]>([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (!existingPost) {
       if (!id) {
         setFormData(EMPTY_FORM);
+        setFaqs([]);
+        setAiWarnings([]);
+        setAiAffiliateSuggestions([]);
+        setAiYoutubeSuggestions([]);
         setHasCustomSlug(false);
       }
       return;
@@ -93,7 +111,7 @@ export function AdminPostEdit() {
       summary: existingPost.summary,
       section: existingPost.section,
       status: existingPost.status,
-      content: blocksToEditorContent(existingPost.content),
+      contentHtml: existingPost.contentHtml || blocksToHtml(existingPost.content),
       seoTitle: existingPost.seoTitle || '',
       metaDescription: existingPost.metaDescription || '',
       featuredImage: existingPost.featuredImage || '',
@@ -101,6 +119,10 @@ export function AdminPostEdit() {
       isFeatured: existingPost.isFeatured,
       publishDate: toDateTimeLocalValue(existingPost.publishDate),
     });
+    setFaqs(existingPost.faqs || []);
+    setAiWarnings([]);
+    setAiAffiliateSuggestions([]);
+    setAiYoutubeSuggestions([]);
     setHasCustomSlug(true);
   }, [existingPost, id]);
 
@@ -110,6 +132,57 @@ export function AdminPostEdit() {
       title: value,
       slug: hasCustomSlug ? current.slug : slugify(value),
     }));
+  };
+
+  const applyAiDraft = (draft: AiGeneratedPostDraft) => {
+    setFormData((current) => ({
+      ...current,
+      title: draft.title,
+      slug: draft.slug,
+      summary: draft.summary,
+      contentHtml: draft.contentHtml,
+      seoTitle: draft.seoTitle,
+      metaDescription: draft.metaDescription,
+      featuredImage: draft.featuredImageUrl || current.featuredImage,
+      tags: draft.tags.join(', '),
+      section: draft.section,
+    }));
+    setFaqs(draft.faqs || []);
+    setAiWarnings(draft.warnings || []);
+    setAiAffiliateSuggestions(draft.affiliateSuggestions || []);
+    setAiYoutubeSuggestions(draft.youtubeSuggestions || []);
+    setHasCustomSlug(true);
+  };
+
+  const handleGenerateWithAi = async () => {
+    setError('');
+
+    if (!formData.title.trim()) {
+      setError('Enter a title first, then generate the draft.');
+      return;
+    }
+
+    const currentText = htmlToPlainText(formData.contentHtml);
+    if (currentText && currentText !== '' && currentText !== ' ') {
+      const shouldOverwrite = window.confirm(
+        'Generating with AI will replace the current content, summary, SEO fields, and AI suggestions. Continue?'
+      );
+      if (!shouldOverwrite) return;
+    }
+
+    try {
+      setIsGeneratingAi(true);
+      const draft = await generateAiPostDraft(formData.title.trim(), formData.section);
+      applyAiDraft(draft);
+    } catch (generationError) {
+      setError(
+        generationError instanceof Error
+          ? generationError.message
+          : 'Could not generate the AI draft.'
+      );
+    } finally {
+      setIsGeneratingAi(false);
+    }
   };
 
   const handleImageUpload = async (file?: File) => {
@@ -132,7 +205,7 @@ export function AdminPostEdit() {
     setError('');
 
     const normalizedSlug = slugify(formData.slug || formData.title);
-    const contentBlocks = editorContentToBlocks(formData.content);
+    const plainTextContent = htmlToPlainText(formData.contentHtml);
 
     if (!formData.title.trim()) {
       setError('Title is required.');
@@ -154,7 +227,7 @@ export function AdminPostEdit() {
       setError('Featured image is required.');
       return;
     }
-    if (contentBlocks.length === 0) {
+    if (!plainTextContent.trim()) {
       setError('Add some content before saving.');
       return;
     }
@@ -182,7 +255,8 @@ export function AdminPostEdit() {
         title: formData.title.trim(),
         slug: normalizedSlug,
         summary: formData.summary.trim(),
-        content: contentBlocks,
+        content: [],
+        contentHtml: formData.contentHtml,
         section: formData.section,
         status: formData.status,
         featuredImage: formData.featuredImage.trim(),
@@ -201,6 +275,7 @@ export function AdminPostEdit() {
           existingPost?.authorName ||
           'Admin',
         authorPhotoURL: currentUser.photoURL || existingPost?.authorPhotoURL || undefined,
+        faqs,
       };
 
       if (existingPost) {
@@ -218,6 +293,7 @@ export function AdminPostEdit() {
   };
 
   const canOpenLivePost = Boolean(existingPost?.slug && formData.status === 'published');
+  const readingTime = calculateReadingTime(htmlToPlainText(formData.contentHtml));
 
   if (id && !isLoading && !existingPost) {
     return (
@@ -256,7 +332,7 @@ export function AdminPostEdit() {
               {existingPost ? 'Edit Post' : 'New Post'}
             </h1>
             <p className="text-[#6D727A]">
-              {existingPost ? 'Update the article and save changes to Firestore.' : 'Create a new blog post in Firestore.'}
+              Write manually, generate with AI, or mix both.
             </p>
           </div>
         </div>
@@ -272,7 +348,7 @@ export function AdminPostEdit() {
           </Button>
           <Button
             onClick={() => void handleSave()}
-            disabled={isSaving || isUploadingImage}
+            disabled={isSaving || isUploadingImage || isGeneratingAi}
             className="bg-[#B8B1F5] text-[#0B0D10] hover:bg-[#a59eef] rounded-full"
           >
             <Save className="w-4 h-4 mr-2" />
@@ -285,15 +361,27 @@ export function AdminPostEdit() {
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-[28px] p-6 border border-[rgba(11,13,16,0.08)]">
             <div className="space-y-4">
-              <div>
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(event) => handleTitleChange(event.target.value)}
-                  placeholder="Post title"
-                  className="mt-1"
-                />
+              <div className="flex items-end gap-3">
+                <div className="flex-1">
+                  <Label htmlFor="title">Title</Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(event) => handleTitleChange(event.target.value)}
+                    placeholder="Post title"
+                    className="mt-1"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="rounded-full"
+                  disabled={isGeneratingAi}
+                  onClick={() => void handleGenerateWithAi()}
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  {isGeneratingAi ? 'Generating...' : 'Write with AI'}
+                </Button>
               </div>
 
               <div>
@@ -315,7 +403,9 @@ export function AdminPostEdit() {
                 <Textarea
                   id="summary"
                   value={formData.summary}
-                  onChange={(event) => setFormData((current) => ({ ...current, summary: event.target.value }))}
+                  onChange={(event) =>
+                    setFormData((current) => ({ ...current, summary: event.target.value }))
+                  }
                   placeholder="Brief summary of the post"
                   rows={3}
                   className="mt-1"
@@ -323,29 +413,101 @@ export function AdminPostEdit() {
               </div>
 
               <div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="content">Content</Label>
-                  <span className="text-xs text-[#6D727A]">
-                    {calculateReadingTime(formData.content)} min read
-                  </span>
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Content</Label>
+                  <span className="text-xs text-[#6D727A]">{readingTime} min read</span>
                 </div>
-                <Textarea
-                  id="content"
-                  value={formData.content}
-                  onChange={(event) => setFormData((current) => ({ ...current, content: event.target.value }))}
-                  placeholder="Write your post content here..."
-                  rows={18}
-                  className="mt-1 font-mono text-sm"
+                <RichTextEditor
+                  value={formData.contentHtml}
+                  onChange={(contentHtml) =>
+                    setFormData((current) => ({ ...current, contentHtml }))
+                  }
                 />
-                <p className="mt-2 text-xs text-[#6D727A]">
-                  Use `## Heading`, `- List item`, `&gt; Quote`, and `!TIP: Callout` formatting.
-                </p>
               </div>
             </div>
           </div>
         </div>
 
         <div className="space-y-6">
+          <div className="bg-white rounded-[28px] p-6 border border-[rgba(11,13,16,0.08)]">
+            <h3 className="font-semibold text-[#0B0D10] mb-4">AI Assistant</h3>
+            <div className="space-y-4">
+              <p className="text-sm text-[#6D727A]">
+                AI uses the current title and section to draft the post body, featured image, SEO, FAQ, affiliate suggestions, and YouTube follow-ups.
+              </p>
+              <Button
+                type="button"
+                className="w-full rounded-full bg-[#0B0D10] text-white hover:bg-[#1A1D21]"
+                disabled={isGeneratingAi}
+                onClick={() => void handleGenerateWithAi()}
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                {isGeneratingAi ? 'Generating draft...' : 'Generate Full Draft'}
+              </Button>
+
+              {aiWarnings.length > 0 && (
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                  <p className="font-medium text-amber-900 mb-2">Warnings</p>
+                  <ul className="list-disc pl-5 text-sm text-amber-800 space-y-1">
+                    {aiWarnings.map((warning) => (
+                      <li key={warning}>{warning}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {(aiAffiliateSuggestions.length > 0 || aiYoutubeSuggestions.length > 0 || faqs.length > 0) && (
+                <div className="rounded-2xl border border-[rgba(11,13,16,0.08)] bg-[#F6F7F9] p-4 space-y-4">
+                  {aiAffiliateSuggestions.length > 0 && (
+                    <div>
+                      <p className="font-medium text-[#0B0D10] mb-2">
+                        Affiliate suggestions ({aiAffiliateSuggestions.length})
+                      </p>
+                      <div className="space-y-2">
+                        {aiAffiliateSuggestions.map((suggestion) => (
+                          <div key={`${suggestion.id}-${suggestion.name}`} className="rounded-xl bg-white p-3 border border-[rgba(11,13,16,0.08)]">
+                            <p className="text-sm font-medium text-[#0B0D10]">{suggestion.name}</p>
+                            <p className="text-xs text-[#6D727A] mt-1">{suggestion.reason}</p>
+                            {suggestion.createdAsDraft && (
+                              <p className="text-xs text-amber-700 mt-2">
+                                Added to Affiliate Links as a draft item that still needs a real destination URL.
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {aiYoutubeSuggestions.length > 0 && (
+                    <div>
+                      <p className="font-medium text-[#0B0D10] mb-2">
+                        YouTube suggestions ({aiYoutubeSuggestions.length})
+                      </p>
+                      <div className="space-y-2">
+                        {aiYoutubeSuggestions.map((suggestion) => (
+                          <div key={`${suggestion.placementHeading}-${suggestion.query}`} className="rounded-xl bg-white p-3 border border-[rgba(11,13,16,0.08)]">
+                            <p className="text-sm font-medium text-[#0B0D10]">{suggestion.title}</p>
+                            <p className="text-xs text-[#6D727A] mt-1">{suggestion.query}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {faqs.length > 0 && (
+                    <div>
+                      <p className="font-medium text-[#0B0D10] mb-2">FAQ section ({faqs.length})</p>
+                      <p className="text-xs text-[#6D727A]">
+                        The AI draft included FAQ content that will be saved with the post.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className="bg-white rounded-[28px] p-6 border border-[rgba(11,13,16,0.08)]">
             <h3 className="font-semibold text-[#0B0D10] mb-4">Publishing</h3>
             <div className="space-y-4">
@@ -450,7 +612,9 @@ export function AdminPostEdit() {
                 <Input
                   id="tags"
                   value={formData.tags}
-                  onChange={(event) => setFormData((current) => ({ ...current, tags: event.target.value }))}
+                  onChange={(event) =>
+                    setFormData((current) => ({ ...current, tags: event.target.value }))
+                  }
                   placeholder="ai tools, automation, affiliate marketing"
                   className="mt-1"
                 />

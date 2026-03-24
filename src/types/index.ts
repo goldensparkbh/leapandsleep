@@ -21,6 +21,7 @@ export interface Post {
   slug: string;
   summary: string;
   content: ContentBlock[];
+  contentHtml?: string;
   section: PostSection;
   categories: string[];
   tags: string[];
@@ -281,4 +282,39 @@ export interface Redirect {
   type: '301' | '302';
   isActive: boolean;
   createdAt: Date;
+}
+
+export interface AiYoutubeSuggestion {
+  placementHeading: string;
+  title: string;
+  query: string;
+  reason: string;
+}
+
+export interface AiAffiliateSuggestion {
+  id: string;
+  name: string;
+  destinationUrl: string;
+  isActive: boolean;
+  placementHeading: string;
+  anchorText: string;
+  reason: string;
+  createdAsDraft: boolean;
+}
+
+export interface AiGeneratedPostDraft {
+  title: string;
+  slug: string;
+  summary: string;
+  seoTitle: string;
+  metaDescription: string;
+  tags: string[];
+  section: PostSection;
+  featuredImageUrl: string;
+  featuredImagePrompt: string;
+  contentHtml: string;
+  youtubeSuggestions: AiYoutubeSuggestion[];
+  affiliateSuggestions: AiAffiliateSuggestion[];
+  faqs: FAQ[];
+  warnings: string[];
 }

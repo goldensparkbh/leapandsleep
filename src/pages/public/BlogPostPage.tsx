@@ -1,5 +1,6 @@
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { ArrowLeft, Clock, Calendar, Twitter, Facebook, Linkedin } from 'lucide-react';
+import DOMPurify from 'dompurify';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/shared/SEO';
@@ -29,6 +30,12 @@ export function BlogPostPage() {
   }
 
   const recentPosts = getRecentPosts(3).filter((p) => p.id !== post.id);
+  const sanitizedContentHtml = post.contentHtml
+    ? DOMPurify.sanitize(post.contentHtml, {
+        ADD_TAGS: ['iframe'],
+        ADD_ATTR: ['allow', 'allowfullscreen', 'class', 'frameborder', 'rel', 'style', 'target'],
+      })
+    : '';
 
   return (
     <>
@@ -116,11 +123,36 @@ export function BlogPostPage() {
             <div className="flex flex-col lg:flex-row gap-12">
               {/* Main Content */}
               <div className="flex-1">
-                <div className="prose prose-lg max-w-none">
-                  {post.content.map((block) => (
-                    <ContentBlockRenderer key={block.id} block={block} />
-                  ))}
-                </div>
+                {sanitizedContentHtml ? (
+                  <div
+                    className="rich-content max-w-none"
+                    dangerouslySetInnerHTML={{ __html: sanitizedContentHtml }}
+                  />
+                ) : (
+                  <div className="prose prose-lg max-w-none">
+                    {post.content.map((block) => (
+                      <ContentBlockRenderer key={block.id} block={block} />
+                    ))}
+                  </div>
+                )}
+
+                {post.faqs && post.faqs.length > 0 && (
+                  <div className="mt-12 rounded-[28px] border border-[rgba(11,13,16,0.08)] bg-white p-6">
+                    <h2 className="text-2xl font-semibold text-[#0B0D10] mb-4">
+                      Frequently asked questions
+                    </h2>
+                    <div className="space-y-5">
+                      {post.faqs.map((faq) => (
+                        <div key={faq.id}>
+                          <h3 className="text-lg font-semibold text-[#0B0D10] mb-2">
+                            {faq.question}
+                          </h3>
+                          <p className="text-[#6D727A] leading-relaxed">{faq.answer}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Affiliate Disclosure */}
                 <div className="mt-10">
