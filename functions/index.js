@@ -435,7 +435,7 @@ function buildContentHtml(blueprint, affiliateSuggestions, youtubeSuggestions, i
   return htmlParts.filter(Boolean).join('\n');
 }
 
-exports.generateBlogPostDraft = onCall(async (request) => {
+exports.generateBlogPostDraft = onCall({ invoker: 'public' }, async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'You must be signed in to generate AI drafts.');
   }
