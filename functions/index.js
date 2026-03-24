@@ -258,6 +258,13 @@ function getImageGenerationWarning(kind, error) {
     return `${label} could not be generated because ${imageModel} requires a paid Google AI plan. Upgrade the plan or switch GEMINI_IMAGE_MODEL to a supported image model.`;
   }
 
+  if (
+    message.includes('quota exceeded') &&
+    (message.includes('free_tier') || message.includes('limit: 0'))
+  ) {
+    return `${label} could not be generated because this project is still on Gemini API free-tier quota for ${imageModel}. A linked billing account is not enough by itself; the project must be upgraded to the Gemini API paid tier in AI Studio.`;
+  }
+
   if (message.includes('reported as leaked')) {
     return `${label} could not be generated because the Gemini API key is blocked. Update GEMINI_API_KEY and redeploy Functions.`;
   }
