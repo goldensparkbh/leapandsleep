@@ -178,8 +178,7 @@ function PostResult({ post }: { post: Post }) {
                 {post.readingTime} min
               </span>
             </div>
-            <h3 className="font-semibold text-[#0B0D10] mb-1">{post.title}</h3>
-            <p className="text-sm text-[#6D727A] line-clamp-2">{post.summary}</p>
+            <h3 className="font-semibold text-[#0B0D10]">{post.title}</h3>
           </div>
           <ArrowRight className="w-5 h-5 text-[#6D727A] flex-shrink-0" />
         </div>

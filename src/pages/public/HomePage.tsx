@@ -129,9 +129,6 @@ function ArticleCard({ post }: { post: Post }) {
           <h3 className="line-clamp-2 text-base font-semibold text-[#0B0D10] transition-colors group-hover:text-[#B8B1F5] lg:text-lg">
             {post.title}
           </h3>
-          <p className="mt-2 line-clamp-2 text-sm text-[#6D727A]">
-            {post.summary}
-          </p>
 
           <div className="mt-3 flex items-center justify-between text-sm text-[#6D727A]">
             <span>{formatDate(post.publishDate)}</span>

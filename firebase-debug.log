@@ -1,78 +1,73 @@
-[debug] [2026-03-24T21:49:26.682Z] ----------------------------------------------------------------------
-[debug] [2026-03-24T21:49:26.688Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\moham\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only hosting --project leapandsleep0
-[debug] [2026-03-24T21:49:26.689Z] CLI Version:   15.1.0
-[debug] [2026-03-24T21:49:26.689Z] Platform:      win32
-[debug] [2026-03-24T21:49:26.689Z] Node Version:  v24.12.0
-[debug] [2026-03-24T21:49:26.689Z] Time:          Wed Mar 25 2026 00:49:26 GMT+0300 (Arabian Standard Time)
-[debug] [2026-03-24T21:49:26.689Z] ----------------------------------------------------------------------
+[debug] [2026-03-24T22:17:32.365Z] ----------------------------------------------------------------------
+[debug] [2026-03-24T22:17:32.370Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\moham\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only hosting --project leapandsleep0
+[debug] [2026-03-24T22:17:32.371Z] CLI Version:   15.1.0
+[debug] [2026-03-24T22:17:32.371Z] Platform:      win32
+[debug] [2026-03-24T22:17:32.371Z] Node Version:  v24.12.0
+[debug] [2026-03-24T22:17:32.371Z] Time:          Wed Mar 25 2026 01:17:32 GMT+0300 (Arabian Standard Time)
+[debug] [2026-03-24T22:17:32.371Z] ----------------------------------------------------------------------
 [debug] 
-[debug] [2026-03-24T21:49:32.010Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
-[debug] [2026-03-24T21:49:32.013Z] > authorizing via signed-in user (sparkflow2030@gmail.com)
-[debug] [2026-03-24T21:49:32.014Z] [iam] checking project leapandsleep0 for permissions ["firebase.projects.get","firebasehosting.sites.update"]
-[debug] [2026-03-24T21:49:32.018Z] Checked if tokens are valid: false, expires at: 1774384562216
-[debug] [2026-03-24T21:49:32.019Z] Checked if tokens are valid: false, expires at: 1774384562216
-[debug] [2026-03-24T21:49:32.020Z] > refreshing access token with scopes: []
-[debug] [2026-03-24T21:49:32.026Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
-[debug] [2026-03-24T21:49:32.027Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
-[debug] [2026-03-24T21:49:32.527Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
-[debug] [2026-03-24T21:49:32.527Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
-[debug] [2026-03-24T21:49:32.544Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/leapandsleep0:testIamPermissions [none]
-[debug] [2026-03-24T21:49:32.544Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/leapandsleep0:testIamPermissions x-goog-quota-user=projects/leapandsleep0
-[debug] [2026-03-24T21:49:32.545Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/leapandsleep0:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
-[debug] [2026-03-24T21:49:34.092Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/leapandsleep0:testIamPermissions 200
-[debug] [2026-03-24T21:49:34.092Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/leapandsleep0:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
-[debug] [2026-03-24T21:49:34.094Z] Checked if tokens are valid: true, expires at: 1774392571528
-[debug] [2026-03-24T21:49:34.094Z] Checked if tokens are valid: true, expires at: 1774392571528
-[debug] [2026-03-24T21:49:34.096Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/leapandsleep0 [none]
-[debug] [2026-03-24T21:49:34.610Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/leapandsleep0 200
-[debug] [2026-03-24T21:49:34.611Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/leapandsleep0 {"projectId":"leapandsleep0","projectNumber":"171234270710","displayName":"leapandsleep0","name":"projects/leapandsleep0","resources":{"hostingSite":"leapandsleep0"},"state":"ACTIVE","etag":"1_199e257c-9e40-465f-8429-19d3157a6e7f"}
+[debug] [2026-03-24T22:17:34.260Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-24T22:17:34.261Z] > authorizing via signed-in user (sparkflow2030@gmail.com)
+[debug] [2026-03-24T22:17:34.261Z] [iam] checking project leapandsleep0 for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-03-24T22:17:34.262Z] Checked if tokens are valid: true, expires at: 1774392571528
+[debug] [2026-03-24T22:17:34.263Z] Checked if tokens are valid: true, expires at: 1774392571528
+[debug] [2026-03-24T22:17:34.266Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/leapandsleep0:testIamPermissions [none]
+[debug] [2026-03-24T22:17:34.267Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/leapandsleep0:testIamPermissions x-goog-quota-user=projects/leapandsleep0
+[debug] [2026-03-24T22:17:34.267Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/leapandsleep0:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-03-24T22:17:35.875Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/leapandsleep0:testIamPermissions 200
+[debug] [2026-03-24T22:17:35.876Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/leapandsleep0:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-03-24T22:17:35.877Z] Checked if tokens are valid: true, expires at: 1774392571528
+[debug] [2026-03-24T22:17:35.878Z] Checked if tokens are valid: true, expires at: 1774392571528
+[debug] [2026-03-24T22:17:35.880Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/leapandsleep0 [none]
+[debug] [2026-03-24T22:17:36.561Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/leapandsleep0 200
+[debug] [2026-03-24T22:17:36.561Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/leapandsleep0 {"projectId":"leapandsleep0","projectNumber":"171234270710","displayName":"leapandsleep0","name":"projects/leapandsleep0","resources":{"hostingSite":"leapandsleep0"},"state":"ACTIVE","etag":"1_199e257c-9e40-465f-8429-19d3157a6e7f"}
 [info] 
 [info] === Deploying to 'leapandsleep0'...
 [info] 
 [info] i  deploying hosting 
-[debug] [2026-03-24T21:49:34.626Z] Checked if tokens are valid: true, expires at: 1774392571528
-[debug] [2026-03-24T21:49:34.627Z] Checked if tokens are valid: true, expires at: 1774392571528
-[debug] [2026-03-24T21:49:34.627Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions [none]
-[debug] [2026-03-24T21:49:34.627Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions {"status":"CREATED","labels":{"deployment-tool":"cli-firebase"}}
-[debug] [2026-03-24T21:49:37.487Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions 200
-[debug] [2026-03-24T21:49:37.488Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions {"name":"projects/171234270710/sites/leapandsleep0/versions/54285829a5dc303a","status":"CREATED","config":{},"labels":{"deployment-tool":"cli-firebase"}}
+[debug] [2026-03-24T22:17:36.574Z] Checked if tokens are valid: true, expires at: 1774392571528
+[debug] [2026-03-24T22:17:36.575Z] Checked if tokens are valid: true, expires at: 1774392571528
+[debug] [2026-03-24T22:17:36.575Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions [none]
+[debug] [2026-03-24T22:17:36.575Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions {"status":"CREATED","labels":{"deployment-tool":"cli-firebase"}}
+[debug] [2026-03-24T22:17:39.521Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions 200
+[debug] [2026-03-24T22:17:39.521Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions {"name":"projects/171234270710/sites/leapandsleep0/versions/4ad55cbff26bc772","status":"CREATED","config":{},"labels":{"deployment-tool":"cli-firebase"}}
 [info] i  hosting[leapandsleep0]: beginning deploy... 
 [info] i  hosting[leapandsleep0]: found 4 files in dist 
-[debug] [2026-03-24T21:49:37.532Z] [hosting] uploading with 200 concurrency
-[debug] [2026-03-24T21:49:37.638Z] Checked if tokens are valid: true, expires at: 1774392571528
-[debug] [2026-03-24T21:49:37.638Z] Checked if tokens are valid: true, expires at: 1774392571528
-[debug] [2026-03-24T21:49:37.641Z] [hosting] hash cache [ZGlzdA] stored for 4 files
-[debug] [2026-03-24T21:49:37.642Z] [hosting][hash queue][FINAL] {"max":99,"min":4,"avg":32.5,"active":0,"complete":4,"success":4,"errored":0,"retried":0,"total":4,"elapsed":107}
-[debug] [2026-03-24T21:49:37.643Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/171234270710/sites/leapandsleep0/versions/54285829a5dc303a:populateFiles [none]
-[debug] [2026-03-24T21:49:37.643Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/171234270710/sites/leapandsleep0/versions/54285829a5dc303a:populateFiles {"files":{"/logo.svg":"d816bc3c8bb87556323ca3b8b362164bb052afbca9bb66ea350a1e1f35e6f74d","/index.html":"80e58a81d0fda6474e7adfc840bfb06d3acda4ee77bd2ab02332b10f61c8fa65","/assets/index-D6KxKx-A.css":"5644768a2aa05aa8375277a7c7bd22e9880a9da30ddf882490b1ec5458cdcc10","/assets/index-tgtDTLa-.js":"b39eda1e299d652cfce6c57e25f4d79ecfbf0098f3135e8a143d30c47055ccd9"}}
-[debug] [2026-03-24T21:49:38.416Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/171234270710/sites/leapandsleep0/versions/54285829a5dc303a:populateFiles 200
-[debug] [2026-03-24T21:49:38.417Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/171234270710/sites/leapandsleep0/versions/54285829a5dc303a:populateFiles {"uploadRequiredHashes":["b39eda1e299d652cfce6c57e25f4d79ecfbf0098f3135e8a143d30c47055ccd9","80e58a81d0fda6474e7adfc840bfb06d3acda4ee77bd2ab02332b10f61c8fa65","5644768a2aa05aa8375277a7c7bd22e9880a9da30ddf882490b1ec5458cdcc10"],"uploadUrl":"https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/54285829a5dc303a/files"}
-[debug] [2026-03-24T21:49:38.419Z] Checked if tokens are valid: true, expires at: 1774392571528
-[debug] [2026-03-24T21:49:38.422Z] Checked if tokens are valid: true, expires at: 1774392571528
-[debug] [2026-03-24T21:49:38.424Z] Checked if tokens are valid: true, expires at: 1774392571528
-[debug] [2026-03-24T21:49:38.424Z] Checked if tokens are valid: true, expires at: 1774392571528
-[debug] [2026-03-24T21:49:38.425Z] Checked if tokens are valid: true, expires at: 1774392571528
-[debug] [2026-03-24T21:49:38.427Z] Checked if tokens are valid: true, expires at: 1774392571528
-[debug] [2026-03-24T21:49:38.431Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/54285829a5dc303a/files/b39eda1e299d652cfce6c57e25f4d79ecfbf0098f3135e8a143d30c47055ccd9 [none]
-[debug] [2026-03-24T21:49:38.432Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/54285829a5dc303a/files/b39eda1e299d652cfce6c57e25f4d79ecfbf0098f3135e8a143d30c47055ccd9 [stream]
-[debug] [2026-03-24T21:49:38.437Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/54285829a5dc303a/files/80e58a81d0fda6474e7adfc840bfb06d3acda4ee77bd2ab02332b10f61c8fa65 [none]
-[debug] [2026-03-24T21:49:38.437Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/54285829a5dc303a/files/80e58a81d0fda6474e7adfc840bfb06d3acda4ee77bd2ab02332b10f61c8fa65 [stream]
-[debug] [2026-03-24T21:49:38.440Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/54285829a5dc303a/files/5644768a2aa05aa8375277a7c7bd22e9880a9da30ddf882490b1ec5458cdcc10 [none]
-[debug] [2026-03-24T21:49:38.441Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/54285829a5dc303a/files/5644768a2aa05aa8375277a7c7bd22e9880a9da30ddf882490b1ec5458cdcc10 [stream]
-[debug] [2026-03-24T21:49:38.445Z] [hosting][populate queue][FINAL] {"max":792,"min":792,"avg":792,"active":0,"complete":1,"success":1,"errored":0,"retried":0,"total":1,"elapsed":807}
-[debug] [2026-03-24T21:49:38.447Z] [hosting] uploads queued: 3
+[debug] [2026-03-24T22:17:39.546Z] [hosting] uploading with 200 concurrency
+[debug] [2026-03-24T22:17:39.638Z] Checked if tokens are valid: true, expires at: 1774392571528
+[debug] [2026-03-24T22:17:39.639Z] Checked if tokens are valid: true, expires at: 1774392571528
+[debug] [2026-03-24T22:17:39.641Z] [hosting] hash cache [ZGlzdA] stored for 4 files
+[debug] [2026-03-24T22:17:39.641Z] [hosting][hash queue][FINAL] {"max":87,"min":4,"avg":26.75,"active":0,"complete":4,"success":4,"errored":0,"retried":0,"total":4,"elapsed":93}
+[debug] [2026-03-24T22:17:39.642Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/171234270710/sites/leapandsleep0/versions/4ad55cbff26bc772:populateFiles [none]
+[debug] [2026-03-24T22:17:39.642Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/171234270710/sites/leapandsleep0/versions/4ad55cbff26bc772:populateFiles {"files":{"/logo.svg":"d816bc3c8bb87556323ca3b8b362164bb052afbca9bb66ea350a1e1f35e6f74d","/index.html":"c865ce8ab07d7514bd14a6b6c84fe180a5c9b735057bac9f0f0de7256dd5193b","/assets/index-VhJ2WsFl.css":"a733ea7d2ef1ac427956630f3c92d0d5d2107f074ee54eb4299b1a1896f52bd3","/assets/index-BQwrbFow.js":"057ccb2687441d885679ea50c75de78a90235441770e06f2523fb1ec4032eff5"}}
+[debug] [2026-03-24T22:17:40.472Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/171234270710/sites/leapandsleep0/versions/4ad55cbff26bc772:populateFiles 200
+[debug] [2026-03-24T22:17:40.473Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/171234270710/sites/leapandsleep0/versions/4ad55cbff26bc772:populateFiles {"uploadRequiredHashes":["c865ce8ab07d7514bd14a6b6c84fe180a5c9b735057bac9f0f0de7256dd5193b","a733ea7d2ef1ac427956630f3c92d0d5d2107f074ee54eb4299b1a1896f52bd3","057ccb2687441d885679ea50c75de78a90235441770e06f2523fb1ec4032eff5"],"uploadUrl":"https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/4ad55cbff26bc772/files"}
+[debug] [2026-03-24T22:17:40.474Z] Checked if tokens are valid: true, expires at: 1774392571528
+[debug] [2026-03-24T22:17:40.474Z] Checked if tokens are valid: true, expires at: 1774392571528
+[debug] [2026-03-24T22:17:40.475Z] Checked if tokens are valid: true, expires at: 1774392571528
+[debug] [2026-03-24T22:17:40.476Z] Checked if tokens are valid: true, expires at: 1774392571528
+[debug] [2026-03-24T22:17:40.477Z] Checked if tokens are valid: true, expires at: 1774392571528
+[debug] [2026-03-24T22:17:40.477Z] Checked if tokens are valid: true, expires at: 1774392571528
+[debug] [2026-03-24T22:17:40.477Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/4ad55cbff26bc772/files/c865ce8ab07d7514bd14a6b6c84fe180a5c9b735057bac9f0f0de7256dd5193b [none]
+[debug] [2026-03-24T22:17:40.478Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/4ad55cbff26bc772/files/c865ce8ab07d7514bd14a6b6c84fe180a5c9b735057bac9f0f0de7256dd5193b [stream]
+[debug] [2026-03-24T22:17:40.481Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/4ad55cbff26bc772/files/a733ea7d2ef1ac427956630f3c92d0d5d2107f074ee54eb4299b1a1896f52bd3 [none]
+[debug] [2026-03-24T22:17:40.482Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/4ad55cbff26bc772/files/a733ea7d2ef1ac427956630f3c92d0d5d2107f074ee54eb4299b1a1896f52bd3 [stream]
+[debug] [2026-03-24T22:17:40.487Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/4ad55cbff26bc772/files/057ccb2687441d885679ea50c75de78a90235441770e06f2523fb1ec4032eff5 [none]
+[debug] [2026-03-24T22:17:40.487Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/4ad55cbff26bc772/files/057ccb2687441d885679ea50c75de78a90235441770e06f2523fb1ec4032eff5 [stream]
+[debug] [2026-03-24T22:17:40.490Z] [hosting][populate queue][FINAL] {"max":839,"min":839,"avg":839,"active":0,"complete":1,"success":1,"errored":0,"retried":0,"total":1,"elapsed":852}
+[debug] [2026-03-24T22:17:40.491Z] [hosting] uploads queued: 3
 [info] i  hosting: uploading new files [0/3] (0%) 
-[debug] [2026-03-24T21:49:39.725Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/54285829a5dc303a/files/80e58a81d0fda6474e7adfc840bfb06d3acda4ee77bd2ab02332b10f61c8fa65 200
-[debug] [2026-03-24T21:49:39.726Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/54285829a5dc303a/files/80e58a81d0fda6474e7adfc840bfb06d3acda4ee77bd2ab02332b10f61c8fa65 [stream]
-[debug] [2026-03-24T21:49:39.938Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/54285829a5dc303a/files/5644768a2aa05aa8375277a7c7bd22e9880a9da30ddf882490b1ec5458cdcc10 200
-[debug] [2026-03-24T21:49:39.939Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/54285829a5dc303a/files/5644768a2aa05aa8375277a7c7bd22e9880a9da30ddf882490b1ec5458cdcc10 [stream]
-[debug] [2026-03-24T21:49:40.329Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/54285829a5dc303a/files/b39eda1e299d652cfce6c57e25f4d79ecfbf0098f3135e8a143d30c47055ccd9 200
-[debug] [2026-03-24T21:49:40.330Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/54285829a5dc303a/files/b39eda1e299d652cfce6c57e25f4d79ecfbf0098f3135e8a143d30c47055ccd9 [stream]
-[debug] [2026-03-24T21:49:40.330Z] [hosting][upload queue][FINAL] {"max":1913,"min":1303,"avg":1576.6666666666667,"active":0,"complete":3,"success":3,"errored":0,"retried":0,"total":3,"elapsed":1913}
+[debug] [2026-03-24T22:17:42.015Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/4ad55cbff26bc772/files/c865ce8ab07d7514bd14a6b6c84fe180a5c9b735057bac9f0f0de7256dd5193b 200
+[debug] [2026-03-24T22:17:42.015Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/4ad55cbff26bc772/files/c865ce8ab07d7514bd14a6b6c84fe180a5c9b735057bac9f0f0de7256dd5193b [stream]
+[debug] [2026-03-24T22:17:42.106Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/4ad55cbff26bc772/files/a733ea7d2ef1ac427956630f3c92d0d5d2107f074ee54eb4299b1a1896f52bd3 200
+[debug] [2026-03-24T22:17:42.106Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/4ad55cbff26bc772/files/a733ea7d2ef1ac427956630f3c92d0d5d2107f074ee54eb4299b1a1896f52bd3 [stream]
+[debug] [2026-03-24T22:17:42.671Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/4ad55cbff26bc772/files/057ccb2687441d885679ea50c75de78a90235441770e06f2523fb1ec4032eff5 200
+[debug] [2026-03-24T22:17:42.671Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/4ad55cbff26bc772/files/057ccb2687441d885679ea50c75de78a90235441770e06f2523fb1ec4032eff5 [stream]
+[debug] [2026-03-24T22:17:42.672Z] [hosting][upload queue][FINAL] {"max":2196,"min":1543,"avg":1790,"active":0,"complete":3,"success":3,"errored":0,"retried":0,"total":3,"elapsed":2199}
 [info] i  hosting: upload complete 
 [info] +  hosting[leapandsleep0]: file upload complete 
-[debug] [2026-03-24T21:49:40.332Z] [hosting] deploy completed after 2835ms
-[debug] [2026-03-24T21:49:40.333Z] [
+[debug] [2026-03-24T22:17:42.674Z] [hosting] deploy completed after 3148ms
+[debug] [2026-03-24T22:17:42.675Z] [
   {
     "config": {
       "public": "dist",
@@ -89,26 +84,244 @@
       ],
       "site": "leapandsleep0"
     },
-    "version": "projects/171234270710/sites/leapandsleep0/versions/54285829a5dc303a"
+    "version": "projects/171234270710/sites/leapandsleep0/versions/4ad55cbff26bc772"
   }
 ]
 [info] i  hosting[leapandsleep0]: finalizing version... 
-[debug] [2026-03-24T21:49:40.339Z] Checked if tokens are valid: true, expires at: 1774392571528
-[debug] [2026-03-24T21:49:40.340Z] Checked if tokens are valid: true, expires at: 1774392571528
-[debug] [2026-03-24T21:49:40.341Z] >>> [apiv2][query] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions/54285829a5dc303a updateMask=status%2Cconfig
-[debug] [2026-03-24T21:49:40.341Z] >>> [apiv2][body] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions/54285829a5dc303a {"status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}]}}
-[debug] [2026-03-24T21:49:42.132Z] <<< [apiv2][status] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions/54285829a5dc303a 200
-[debug] [2026-03-24T21:49:42.132Z] <<< [apiv2][body] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions/54285829a5dc303a {"name":"projects/171234270710/sites/leapandsleep0/versions/54285829a5dc303a","status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2026-03-24T21:49:33.321832Z","createUser":{"email":"sparkflow2030@gmail.com"},"finalizeTime":"2026-03-24T21:49:39.156381Z","finalizeUser":{"email":"sparkflow2030@gmail.com"}}
-[debug] [2026-03-24T21:49:42.133Z] [hosting] finalized version for leapandsleep0:[object Object]
+[debug] [2026-03-24T22:17:42.679Z] Checked if tokens are valid: true, expires at: 1774392571528
+[debug] [2026-03-24T22:17:42.679Z] Checked if tokens are valid: true, expires at: 1774392571528
+[debug] [2026-03-24T22:17:42.680Z] >>> [apiv2][query] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions/4ad55cbff26bc772 updateMask=status%2Cconfig
+[debug] [2026-03-24T22:17:42.680Z] >>> [apiv2][body] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions/4ad55cbff26bc772 {"status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}]}}
+[debug] [2026-03-24T22:17:44.235Z] <<< [apiv2][status] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions/4ad55cbff26bc772 200
+[debug] [2026-03-24T22:17:44.236Z] <<< [apiv2][body] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions/4ad55cbff26bc772 {"name":"projects/171234270710/sites/leapandsleep0/versions/4ad55cbff26bc772","status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2026-03-24T22:17:34.976406Z","createUser":{"email":"sparkflow2030@gmail.com"},"finalizeTime":"2026-03-24T22:17:40.884267Z","finalizeUser":{"email":"sparkflow2030@gmail.com"}}
+[debug] [2026-03-24T22:17:44.236Z] [hosting] finalized version for leapandsleep0:[object Object]
 [info] +  hosting[leapandsleep0]: version finalized 
 [info] i  hosting[leapandsleep0]: releasing new version... 
-[debug] [2026-03-24T21:49:42.134Z] Checked if tokens are valid: true, expires at: 1774392571528
-[debug] [2026-03-24T21:49:42.134Z] Checked if tokens are valid: true, expires at: 1774392571528
-[debug] [2026-03-24T21:49:42.136Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/channels/live/releases versionName=projects%2F171234270710%2Fsites%2Fleapandsleep0%2Fversions%2F54285829a5dc303a
-[debug] [2026-03-24T21:49:42.136Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/channels/live/releases {}
-[debug] [2026-03-24T21:49:43.685Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/channels/live/releases 200
-[debug] [2026-03-24T21:49:43.685Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/channels/live/releases {"name":"projects/171234270710/sites/leapandsleep0/channels/live/releases/1774388979742000","version":{"name":"projects/171234270710/sites/leapandsleep0/versions/54285829a5dc303a","status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2026-03-24T21:49:33.321832Z","createUser":{"email":"sparkflow2030@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJE6WyEaYC_2uYXmSxNO2uHGbGXpiRRHbvxoWiPhEboJZXEiQ=mo"},"finalizeTime":"2026-03-24T21:49:39.156381Z","finalizeUser":{"email":"sparkflow2030@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJE6WyEaYC_2uYXmSxNO2uHGbGXpiRRHbvxoWiPhEboJZXEiQ=mo"}},"type":"DEPLOY","releaseTime":"2026-03-24T21:49:39.742Z","releaseUser":{"email":"sparkflow2030@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJE6WyEaYC_2uYXmSxNO2uHGbGXpiRRHbvxoWiPhEboJZXEiQ=mo"}}
-[debug] [2026-03-24T21:49:43.686Z] [hosting] release: {"name":"projects/171234270710/sites/leapandsleep0/channels/live/releases/1774388979742000","version":{"name":"projects/171234270710/sites/leapandsleep0/versions/54285829a5dc303a","status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2026-03-24T21:49:33.321832Z","createUser":{"email":"sparkflow2030@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJE6WyEaYC_2uYXmSxNO2uHGbGXpiRRHbvxoWiPhEboJZXEiQ=mo"},"finalizeTime":"2026-03-24T21:49:39.156381Z","finalizeUser":{"email":"sparkflow2030@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJE6WyEaYC_2uYXmSxNO2uHGbGXpiRRHbvxoWiPhEboJZXEiQ=mo"}},"type":"DEPLOY","releaseTime":"2026-03-24T21:49:39.742Z","releaseUser":{"email":"sparkflow2030@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJE6WyEaYC_2uYXmSxNO2uHGbGXpiRRHbvxoWiPhEboJZXEiQ=mo"}}
+[debug] [2026-03-24T22:17:44.238Z] Checked if tokens are valid: true, expires at: 1774392571528
+[debug] [2026-03-24T22:17:44.238Z] Checked if tokens are valid: true, expires at: 1774392571528
+[debug] [2026-03-24T22:17:44.239Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/channels/live/releases versionName=projects%2F171234270710%2Fsites%2Fleapandsleep0%2Fversions%2F4ad55cbff26bc772
+[debug] [2026-03-24T22:17:44.239Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/channels/live/releases {}
+[debug] [2026-03-24T22:17:46.375Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/channels/live/releases 200
+[debug] [2026-03-24T22:17:46.375Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/channels/live/releases {"name":"projects/171234270710/sites/leapandsleep0/channels/live/releases/1774390662099000","version":{"name":"projects/171234270710/sites/leapandsleep0/versions/4ad55cbff26bc772","status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2026-03-24T22:17:34.976406Z","createUser":{"email":"sparkflow2030@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJE6WyEaYC_2uYXmSxNO2uHGbGXpiRRHbvxoWiPhEboJZXEiQ=mo"},"finalizeTime":"2026-03-24T22:17:40.884267Z","finalizeUser":{"email":"sparkflow2030@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJE6WyEaYC_2uYXmSxNO2uHGbGXpiRRHbvxoWiPhEboJZXEiQ=mo"}},"type":"DEPLOY","releaseTime":"2026-03-24T22:17:42.099Z","releaseUser":{"email":"sparkflow2030@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJE6WyEaYC_2uYXmSxNO2uHGbGXpiRRHbvxoWiPhEboJZXEiQ=mo"}}
+[debug] [2026-03-24T22:17:46.376Z] [hosting] release: {"name":"projects/171234270710/sites/leapandsleep0/channels/live/releases/1774390662099000","version":{"name":"projects/171234270710/sites/leapandsleep0/versions/4ad55cbff26bc772","status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2026-03-24T22:17:34.976406Z","createUser":{"email":"sparkflow2030@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJE6WyEaYC_2uYXmSxNO2uHGbGXpiRRHbvxoWiPhEboJZXEiQ=mo"},"finalizeTime":"2026-03-24T22:17:40.884267Z","finalizeUser":{"email":"sparkflow2030@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJE6WyEaYC_2uYXmSxNO2uHGbGXpiRRHbvxoWiPhEboJZXEiQ=mo"}},"type":"DEPLOY","releaseTime":"2026-03-24T22:17:42.099Z","releaseUser":{"email":"sparkflow2030@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJE6WyEaYC_2uYXmSxNO2uHGbGXpiRRHbvxoWiPhEboJZXEiQ=mo"}}
+[info] +  hosting[leapandsleep0]: release complete 
+[info] 
+[info] +  Deploy complete! 
+[info] 
+[info] Project Console: https://console.firebase.google.com/project/leapandsleep0/overview
+[info] Hosting URL: https://leapandsleep0.web.app
+[debug] [2026-03-25T03:25:42.093Z] ----------------------------------------------------------------------
+[debug] [2026-03-25T03:25:42.097Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\moham\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only hosting --project leapandsleep0
+[debug] [2026-03-25T03:25:42.097Z] CLI Version:   15.1.0
+[debug] [2026-03-25T03:25:42.097Z] Platform:      win32
+[debug] [2026-03-25T03:25:42.097Z] Node Version:  v24.12.0
+[debug] [2026-03-25T03:25:42.097Z] Time:          Wed Mar 25 2026 06:25:42 GMT+0300 (Arabian Standard Time)
+[debug] [2026-03-25T03:25:42.098Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-03-25T03:25:45.573Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-25T03:25:45.575Z] > authorizing via signed-in user (sparkflow2030@gmail.com)
+[debug] [2026-03-25T03:25:45.575Z] [iam] checking project leapandsleep0 for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-03-25T03:25:45.580Z] Checked if tokens are valid: false, expires at: 1774392571528
+[debug] [2026-03-25T03:25:45.580Z] Checked if tokens are valid: false, expires at: 1774392571528
+[debug] [2026-03-25T03:25:45.581Z] > refreshing access token with scopes: []
+[debug] [2026-03-25T03:25:45.586Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-25T03:25:45.586Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-25T03:25:46.056Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-03-25T03:25:46.057Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-25T03:25:46.071Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/leapandsleep0:testIamPermissions [none]
+[debug] [2026-03-25T03:25:46.072Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/leapandsleep0:testIamPermissions x-goog-quota-user=projects/leapandsleep0
+[debug] [2026-03-25T03:25:46.072Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/leapandsleep0:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-03-25T03:25:47.731Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/leapandsleep0:testIamPermissions 200
+[debug] [2026-03-25T03:25:47.731Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/leapandsleep0:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-03-25T03:25:47.733Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:25:47.734Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:25:47.736Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/leapandsleep0 [none]
+[debug] [2026-03-25T03:25:48.523Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/leapandsleep0 200
+[debug] [2026-03-25T03:25:48.524Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/leapandsleep0 {"projectId":"leapandsleep0","projectNumber":"171234270710","displayName":"leapandsleep0","name":"projects/leapandsleep0","resources":{"hostingSite":"leapandsleep0"},"state":"ACTIVE","etag":"1_199e257c-9e40-465f-8429-19d3157a6e7f"}
+[info] 
+[info] === Deploying to 'leapandsleep0'...
+[info] 
+[info] i  deploying hosting 
+[debug] [2026-03-25T03:25:48.537Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:25:48.538Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:25:48.538Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions [none]
+[debug] [2026-03-25T03:25:48.538Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions {"status":"CREATED","labels":{"deployment-tool":"cli-firebase"}}
+[debug] [2026-03-25T03:25:51.420Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions 200
+[debug] [2026-03-25T03:25:51.420Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions {"name":"projects/171234270710/sites/leapandsleep0/versions/4ae8cbd032a4ef98","status":"CREATED","config":{},"labels":{"deployment-tool":"cli-firebase"}}
+[info] i  hosting[leapandsleep0]: beginning deploy... 
+[info] i  hosting[leapandsleep0]: found 4 files in dist 
+[debug] [2026-03-25T03:25:51.442Z] [hosting] uploading with 200 concurrency
+[debug] [2026-03-25T03:25:51.537Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:25:51.538Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:25:51.540Z] [hosting] hash cache [ZGlzdA] stored for 4 files
+[debug] [2026-03-25T03:25:51.541Z] [hosting][hash queue][FINAL] {"max":90,"min":3,"avg":27.5,"active":0,"complete":4,"success":4,"errored":0,"retried":0,"total":4,"elapsed":97}
+[debug] [2026-03-25T03:25:51.541Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/171234270710/sites/leapandsleep0/versions/4ae8cbd032a4ef98:populateFiles [none]
+[debug] [2026-03-25T03:25:51.542Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/171234270710/sites/leapandsleep0/versions/4ae8cbd032a4ef98:populateFiles {"files":{"/logo.svg":"d816bc3c8bb87556323ca3b8b362164bb052afbca9bb66ea350a1e1f35e6f74d","/index.html":"fb1a826929a7653e0d8564803842a52bd480414ec05d5b4a3d8090b2fcc03ab7","/assets/index-VhJ2WsFl.css":"a733ea7d2ef1ac427956630f3c92d0d5d2107f074ee54eb4299b1a1896f52bd3","/assets/index-BHR5XV0H.js":"c8aecbef4ea3c40f51c55d0937f85d88156ce5716b9c9baa902a7834c5e369b4"}}
+[debug] [2026-03-25T03:25:52.963Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/171234270710/sites/leapandsleep0/versions/4ae8cbd032a4ef98:populateFiles 200
+[debug] [2026-03-25T03:25:52.964Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/171234270710/sites/leapandsleep0/versions/4ae8cbd032a4ef98:populateFiles {"uploadRequiredHashes":["c8aecbef4ea3c40f51c55d0937f85d88156ce5716b9c9baa902a7834c5e369b4","fb1a826929a7653e0d8564803842a52bd480414ec05d5b4a3d8090b2fcc03ab7"],"uploadUrl":"https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/4ae8cbd032a4ef98/files"}
+[debug] [2026-03-25T03:25:52.965Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:25:52.966Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:25:52.968Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:25:52.968Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:25:52.969Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/4ae8cbd032a4ef98/files/c8aecbef4ea3c40f51c55d0937f85d88156ce5716b9c9baa902a7834c5e369b4 [none]
+[debug] [2026-03-25T03:25:52.970Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/4ae8cbd032a4ef98/files/c8aecbef4ea3c40f51c55d0937f85d88156ce5716b9c9baa902a7834c5e369b4 [stream]
+[debug] [2026-03-25T03:25:52.974Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/4ae8cbd032a4ef98/files/fb1a826929a7653e0d8564803842a52bd480414ec05d5b4a3d8090b2fcc03ab7 [none]
+[debug] [2026-03-25T03:25:52.975Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/4ae8cbd032a4ef98/files/fb1a826929a7653e0d8564803842a52bd480414ec05d5b4a3d8090b2fcc03ab7 [stream]
+[debug] [2026-03-25T03:25:52.979Z] [hosting][populate queue][FINAL] {"max":1432,"min":1432,"avg":1432,"active":0,"complete":1,"success":1,"errored":0,"retried":0,"total":1,"elapsed":1442}
+[debug] [2026-03-25T03:25:52.979Z] [hosting] uploads queued: 2
+[info] i  hosting: uploading new files [0/2] (0%) 
+[debug] [2026-03-25T03:25:54.543Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/4ae8cbd032a4ef98/files/fb1a826929a7653e0d8564803842a52bd480414ec05d5b4a3d8090b2fcc03ab7 200
+[debug] [2026-03-25T03:25:54.543Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/4ae8cbd032a4ef98/files/fb1a826929a7653e0d8564803842a52bd480414ec05d5b4a3d8090b2fcc03ab7 [stream]
+[info] i  hosting: uploading new files [1/2] (50%) 
+[debug] [2026-03-25T03:25:55.651Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/4ae8cbd032a4ef98/files/c8aecbef4ea3c40f51c55d0937f85d88156ce5716b9c9baa902a7834c5e369b4 200
+[debug] [2026-03-25T03:25:55.651Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/4ae8cbd032a4ef98/files/c8aecbef4ea3c40f51c55d0937f85d88156ce5716b9c9baa902a7834c5e369b4 [stream]
+[debug] [2026-03-25T03:25:55.652Z] [hosting][upload queue][FINAL] {"max":2688,"min":1577,"avg":2132.5,"active":0,"complete":2,"success":2,"errored":0,"retried":0,"total":2,"elapsed":2688}
+[info] i  hosting: upload complete 
+[info] +  hosting[leapandsleep0]: file upload complete 
+[debug] [2026-03-25T03:25:55.653Z] [hosting] deploy completed after 4228ms
+[debug] [2026-03-25T03:25:55.654Z] [
+  {
+    "config": {
+      "public": "dist",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "site": "leapandsleep0"
+    },
+    "version": "projects/171234270710/sites/leapandsleep0/versions/4ae8cbd032a4ef98"
+  }
+]
+[info] i  hosting[leapandsleep0]: finalizing version... 
+[debug] [2026-03-25T03:25:55.658Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:25:55.659Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:25:55.659Z] >>> [apiv2][query] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions/4ae8cbd032a4ef98 updateMask=status%2Cconfig
+[debug] [2026-03-25T03:25:55.659Z] >>> [apiv2][body] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions/4ae8cbd032a4ef98 {"status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}]}}
+[debug] [2026-03-25T03:25:57.258Z] <<< [apiv2][status] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions/4ae8cbd032a4ef98 200
+[debug] [2026-03-25T03:25:57.258Z] <<< [apiv2][body] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions/4ae8cbd032a4ef98 {"name":"projects/171234270710/sites/leapandsleep0/versions/4ae8cbd032a4ef98","status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2026-03-25T03:25:49.626618Z","createUser":{"email":"sparkflow2030@gmail.com"},"finalizeTime":"2026-03-25T03:25:56.689771Z","finalizeUser":{"email":"sparkflow2030@gmail.com"}}
+[debug] [2026-03-25T03:25:57.258Z] [hosting] finalized version for leapandsleep0:[object Object]
+[info] +  hosting[leapandsleep0]: version finalized 
+[info] i  hosting[leapandsleep0]: releasing new version... 
+[debug] [2026-03-25T03:25:57.259Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:25:57.260Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:25:57.261Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/channels/live/releases versionName=projects%2F171234270710%2Fsites%2Fleapandsleep0%2Fversions%2F4ae8cbd032a4ef98
+[debug] [2026-03-25T03:25:57.261Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/channels/live/releases {}
+[debug] [2026-03-25T03:25:59.609Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/channels/live/releases 200
+[debug] [2026-03-25T03:25:59.609Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/channels/live/releases {"name":"projects/171234270710/sites/leapandsleep0/channels/live/releases/1774409158123000","version":{"name":"projects/171234270710/sites/leapandsleep0/versions/4ae8cbd032a4ef98","status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2026-03-25T03:25:49.626618Z","createUser":{"email":"sparkflow2030@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJE6WyEaYC_2uYXmSxNO2uHGbGXpiRRHbvxoWiPhEboJZXEiQ=mo"},"finalizeTime":"2026-03-25T03:25:56.689771Z","finalizeUser":{"email":"sparkflow2030@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJE6WyEaYC_2uYXmSxNO2uHGbGXpiRRHbvxoWiPhEboJZXEiQ=mo"}},"type":"DEPLOY","releaseTime":"2026-03-25T03:25:58.123Z","releaseUser":{"email":"sparkflow2030@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJE6WyEaYC_2uYXmSxNO2uHGbGXpiRRHbvxoWiPhEboJZXEiQ=mo"}}
+[debug] [2026-03-25T03:25:59.609Z] [hosting] release: {"name":"projects/171234270710/sites/leapandsleep0/channels/live/releases/1774409158123000","version":{"name":"projects/171234270710/sites/leapandsleep0/versions/4ae8cbd032a4ef98","status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2026-03-25T03:25:49.626618Z","createUser":{"email":"sparkflow2030@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJE6WyEaYC_2uYXmSxNO2uHGbGXpiRRHbvxoWiPhEboJZXEiQ=mo"},"finalizeTime":"2026-03-25T03:25:56.689771Z","finalizeUser":{"email":"sparkflow2030@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJE6WyEaYC_2uYXmSxNO2uHGbGXpiRRHbvxoWiPhEboJZXEiQ=mo"}},"type":"DEPLOY","releaseTime":"2026-03-25T03:25:58.123Z","releaseUser":{"email":"sparkflow2030@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJE6WyEaYC_2uYXmSxNO2uHGbGXpiRRHbvxoWiPhEboJZXEiQ=mo"}}
+[info] +  hosting[leapandsleep0]: release complete 
+[info] 
+[info] +  Deploy complete! 
+[info] 
+[info] Project Console: https://console.firebase.google.com/project/leapandsleep0/overview
+[info] Hosting URL: https://leapandsleep0.web.app
+[debug] [2026-03-25T03:29:06.683Z] ----------------------------------------------------------------------
+[debug] [2026-03-25T03:29:06.687Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\moham\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only hosting --project leapandsleep0
+[debug] [2026-03-25T03:29:06.688Z] CLI Version:   15.1.0
+[debug] [2026-03-25T03:29:06.688Z] Platform:      win32
+[debug] [2026-03-25T03:29:06.688Z] Node Version:  v24.12.0
+[debug] [2026-03-25T03:29:06.688Z] Time:          Wed Mar 25 2026 06:29:06 GMT+0300 (Arabian Standard Time)
+[debug] [2026-03-25T03:29:06.688Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-03-25T03:29:08.456Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-25T03:29:08.457Z] > authorizing via signed-in user (sparkflow2030@gmail.com)
+[debug] [2026-03-25T03:29:08.457Z] [iam] checking project leapandsleep0 for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-03-25T03:29:08.459Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:29:08.460Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:29:08.461Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/leapandsleep0:testIamPermissions [none]
+[debug] [2026-03-25T03:29:08.462Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/leapandsleep0:testIamPermissions x-goog-quota-user=projects/leapandsleep0
+[debug] [2026-03-25T03:29:08.462Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/leapandsleep0:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-03-25T03:29:10.009Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/leapandsleep0:testIamPermissions 200
+[debug] [2026-03-25T03:29:10.010Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/leapandsleep0:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-03-25T03:29:10.012Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:29:10.013Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:29:10.014Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/leapandsleep0 [none]
+[debug] [2026-03-25T03:29:10.789Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/leapandsleep0 200
+[debug] [2026-03-25T03:29:10.789Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/leapandsleep0 {"projectId":"leapandsleep0","projectNumber":"171234270710","displayName":"leapandsleep0","name":"projects/leapandsleep0","resources":{"hostingSite":"leapandsleep0"},"state":"ACTIVE","etag":"1_199e257c-9e40-465f-8429-19d3157a6e7f"}
+[info] 
+[info] === Deploying to 'leapandsleep0'...
+[info] 
+[info] i  deploying hosting 
+[debug] [2026-03-25T03:29:10.802Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:29:10.803Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:29:10.803Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions [none]
+[debug] [2026-03-25T03:29:10.803Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions {"status":"CREATED","labels":{"deployment-tool":"cli-firebase"}}
+[debug] [2026-03-25T03:29:13.747Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions 200
+[debug] [2026-03-25T03:29:13.748Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions {"name":"projects/171234270710/sites/leapandsleep0/versions/862b3f037670aee0","status":"CREATED","config":{},"labels":{"deployment-tool":"cli-firebase"}}
+[info] i  hosting[leapandsleep0]: beginning deploy... 
+[info] i  hosting[leapandsleep0]: found 4 files in dist 
+[debug] [2026-03-25T03:29:13.771Z] [hosting] uploading with 200 concurrency
+[debug] [2026-03-25T03:29:13.870Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:29:13.870Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:29:13.872Z] [hosting] hash cache [ZGlzdA] stored for 4 files
+[debug] [2026-03-25T03:29:13.873Z] [hosting][hash queue][FINAL] {"max":92,"min":3,"avg":28,"active":0,"complete":4,"success":4,"errored":0,"retried":0,"total":4,"elapsed":100}
+[debug] [2026-03-25T03:29:13.873Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/171234270710/sites/leapandsleep0/versions/862b3f037670aee0:populateFiles [none]
+[debug] [2026-03-25T03:29:13.874Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/171234270710/sites/leapandsleep0/versions/862b3f037670aee0:populateFiles {"files":{"/logo.svg":"d816bc3c8bb87556323ca3b8b362164bb052afbca9bb66ea350a1e1f35e6f74d","/index.html":"e61c238c35898b5f8f63ec804a56d9a16914d6405ce3dc4906ceab61406207cb","/assets/index-VhJ2WsFl.css":"a733ea7d2ef1ac427956630f3c92d0d5d2107f074ee54eb4299b1a1896f52bd3","/assets/index-B8yWW66q.js":"4b0329c6f1d1546379702a4e5ce155b99e94b3254b68805ebed0cf45e25d959b"}}
+[debug] [2026-03-25T03:29:15.038Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/171234270710/sites/leapandsleep0/versions/862b3f037670aee0:populateFiles 200
+[debug] [2026-03-25T03:29:15.038Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/171234270710/sites/leapandsleep0/versions/862b3f037670aee0:populateFiles {"uploadRequiredHashes":["4b0329c6f1d1546379702a4e5ce155b99e94b3254b68805ebed0cf45e25d959b","e61c238c35898b5f8f63ec804a56d9a16914d6405ce3dc4906ceab61406207cb"],"uploadUrl":"https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/862b3f037670aee0/files"}
+[debug] [2026-03-25T03:29:15.039Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:29:15.040Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:29:15.040Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:29:15.041Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:29:15.041Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/862b3f037670aee0/files/4b0329c6f1d1546379702a4e5ce155b99e94b3254b68805ebed0cf45e25d959b [none]
+[debug] [2026-03-25T03:29:15.041Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/862b3f037670aee0/files/4b0329c6f1d1546379702a4e5ce155b99e94b3254b68805ebed0cf45e25d959b [stream]
+[debug] [2026-03-25T03:29:15.045Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/862b3f037670aee0/files/e61c238c35898b5f8f63ec804a56d9a16914d6405ce3dc4906ceab61406207cb [none]
+[debug] [2026-03-25T03:29:15.046Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/862b3f037670aee0/files/e61c238c35898b5f8f63ec804a56d9a16914d6405ce3dc4906ceab61406207cb [stream]
+[debug] [2026-03-25T03:29:15.051Z] [hosting][populate queue][FINAL] {"max":1172,"min":1172,"avg":1172,"active":0,"complete":1,"success":1,"errored":0,"retried":0,"total":1,"elapsed":1182}
+[debug] [2026-03-25T03:29:15.052Z] [hosting] uploads queued: 2
+[info] i  hosting: uploading new files [0/2] (0%) 
+[debug] [2026-03-25T03:29:16.282Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/862b3f037670aee0/files/e61c238c35898b5f8f63ec804a56d9a16914d6405ce3dc4906ceab61406207cb 200
+[debug] [2026-03-25T03:29:16.282Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/862b3f037670aee0/files/e61c238c35898b5f8f63ec804a56d9a16914d6405ce3dc4906ceab61406207cb [stream]
+[debug] [2026-03-25T03:29:17.106Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/862b3f037670aee0/files/4b0329c6f1d1546379702a4e5ce155b99e94b3254b68805ebed0cf45e25d959b 200
+[debug] [2026-03-25T03:29:17.106Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/leapandsleep0/versions/862b3f037670aee0/files/4b0329c6f1d1546379702a4e5ce155b99e94b3254b68805ebed0cf45e25d959b [stream]
+[debug] [2026-03-25T03:29:17.107Z] [hosting][upload queue][FINAL] {"max":2068,"min":1242,"avg":1655,"active":0,"complete":2,"success":2,"errored":0,"retried":0,"total":2,"elapsed":2069}
+[info] i  hosting: upload complete 
+[info] +  hosting[leapandsleep0]: file upload complete 
+[debug] [2026-03-25T03:29:17.108Z] [hosting] deploy completed after 3355ms
+[debug] [2026-03-25T03:29:17.108Z] [
+  {
+    "config": {
+      "public": "dist",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "site": "leapandsleep0"
+    },
+    "version": "projects/171234270710/sites/leapandsleep0/versions/862b3f037670aee0"
+  }
+]
+[info] i  hosting[leapandsleep0]: finalizing version... 
+[debug] [2026-03-25T03:29:17.114Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:29:17.114Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:29:17.115Z] >>> [apiv2][query] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions/862b3f037670aee0 updateMask=status%2Cconfig
+[debug] [2026-03-25T03:29:17.115Z] >>> [apiv2][body] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions/862b3f037670aee0 {"status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}]}}
+[debug] [2026-03-25T03:29:18.719Z] <<< [apiv2][status] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions/862b3f037670aee0 200
+[debug] [2026-03-25T03:29:18.720Z] <<< [apiv2][body] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/versions/862b3f037670aee0 {"name":"projects/171234270710/sites/leapandsleep0/versions/862b3f037670aee0","status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2026-03-25T03:29:11.970284Z","createUser":{"email":"sparkflow2030@gmail.com"},"finalizeTime":"2026-03-25T03:29:18.153329Z","finalizeUser":{"email":"sparkflow2030@gmail.com"}}
+[debug] [2026-03-25T03:29:18.720Z] [hosting] finalized version for leapandsleep0:[object Object]
+[info] +  hosting[leapandsleep0]: version finalized 
+[info] i  hosting[leapandsleep0]: releasing new version... 
+[debug] [2026-03-25T03:29:18.721Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:29:18.722Z] Checked if tokens are valid: true, expires at: 1774412745057
+[debug] [2026-03-25T03:29:18.722Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/channels/live/releases versionName=projects%2F171234270710%2Fsites%2Fleapandsleep0%2Fversions%2F862b3f037670aee0
+[debug] [2026-03-25T03:29:18.722Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/channels/live/releases {}
+[debug] [2026-03-25T03:29:21.032Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/channels/live/releases 200
+[debug] [2026-03-25T03:29:21.033Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/leapandsleep0/channels/live/releases {"name":"projects/171234270710/sites/leapandsleep0/channels/live/releases/1774409359496000","version":{"name":"projects/171234270710/sites/leapandsleep0/versions/862b3f037670aee0","status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2026-03-25T03:29:11.970284Z","createUser":{"email":"sparkflow2030@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJE6WyEaYC_2uYXmSxNO2uHGbGXpiRRHbvxoWiPhEboJZXEiQ=mo"},"finalizeTime":"2026-03-25T03:29:18.153329Z","finalizeUser":{"email":"sparkflow2030@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJE6WyEaYC_2uYXmSxNO2uHGbGXpiRRHbvxoWiPhEboJZXEiQ=mo"}},"type":"DEPLOY","releaseTime":"2026-03-25T03:29:19.496Z","releaseUser":{"email":"sparkflow2030@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJE6WyEaYC_2uYXmSxNO2uHGbGXpiRRHbvxoWiPhEboJZXEiQ=mo"}}
+[debug] [2026-03-25T03:29:21.033Z] [hosting] release: {"name":"projects/171234270710/sites/leapandsleep0/channels/live/releases/1774409359496000","version":{"name":"projects/171234270710/sites/leapandsleep0/versions/862b3f037670aee0","status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2026-03-25T03:29:11.970284Z","createUser":{"email":"sparkflow2030@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJE6WyEaYC_2uYXmSxNO2uHGbGXpiRRHbvxoWiPhEboJZXEiQ=mo"},"finalizeTime":"2026-03-25T03:29:18.153329Z","finalizeUser":{"email":"sparkflow2030@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJE6WyEaYC_2uYXmSxNO2uHGbGXpiRRHbvxoWiPhEboJZXEiQ=mo"}},"type":"DEPLOY","releaseTime":"2026-03-25T03:29:19.496Z","releaseUser":{"email":"sparkflow2030@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJE6WyEaYC_2uYXmSxNO2uHGbGXpiRRHbvxoWiPhEboJZXEiQ=mo"}}
 [info] +  hosting[leapandsleep0]: release complete 
 [info] 
 [info] +  Deploy complete! 

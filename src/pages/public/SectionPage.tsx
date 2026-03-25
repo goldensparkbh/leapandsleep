@@ -111,7 +111,6 @@ export function SectionPage() {
                         <h3 className="text-lg font-semibold text-[#0B0D10] line-clamp-2 group-hover:text-[#B8B1F5] transition-colors">
                           {post.title}
                         </h3>
-                        <p className="text-sm text-[#6D727A] mt-2 line-clamp-2">{post.summary}</p>
                         <div className="mt-4 text-sm text-[#6D727A]">{formatDate(post.publishDate)}</div>
                       </div>
                     </article>

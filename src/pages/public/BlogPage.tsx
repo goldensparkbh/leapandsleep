@@ -148,15 +148,11 @@ function BlogCard({ post }: { post: Post }) {
             </span>
           </div>
 
-          <h3 className="text-lg font-semibold text-[#0B0D10] mb-2 line-clamp-2 group-hover:text-[#B8B1F5] transition-colors">
+          <h3 className="text-lg font-semibold text-[#0B0D10] line-clamp-2 group-hover:text-[#B8B1F5] transition-colors">
             {post.title}
           </h3>
 
-          <p className="text-sm text-[#6D727A] line-clamp-2 mb-4">
-            {post.summary}
-          </p>
-
-          <div className="flex items-center justify-between">
+          <div className="mt-4 flex items-center justify-between">
             <span className="text-sm text-[#6D727A]">{formatDate(post.publishDate)}</span>
             <ArrowRight className="w-4 h-4 text-[#6D727A] group-hover:text-[#B8B1F5] transition-colors" />
           </div>

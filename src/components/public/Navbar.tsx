@@ -35,11 +35,11 @@ export function Navbar() {
     <header
       className={`fixed z-50 transition-all duration-300 ${
         isScrolled
-          ? 'site-shell-navbar top-3 rounded-[28px] border border-[rgba(11,13,16,0.08)] bg-[#F6F7F9]/92 shadow-[0_16px_40px_rgba(11,13,16,0.10)] backdrop-blur-md lg:top-5'
-          : 'site-shell-navbar top-3 bg-transparent lg:top-5'
+          ? 'top-0 left-0 right-0 bg-[#F6F7F9]/90 backdrop-blur-md shadow-sm'
+          : 'top-0 left-0 right-0 bg-transparent'
       }`}
     >
-      <div className="w-full px-6 lg:px-10">
+      <div className="site-content-width px-6 lg:px-10">
         <nav className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <BrandLogo imageClassName="h-10 lg:h-11" />

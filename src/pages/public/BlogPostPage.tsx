@@ -84,7 +84,7 @@ export function BlogPostPage() {
             </Button>
           </Link>
 
-          <div className="max-w-4xl">
+          <div className="w-full">
             <div className="flex items-center gap-3 mb-4">
               <Badge variant="secondary" className="bg-white text-[#B8B1F5]">
                 {getSectionLabel(post.section)}
